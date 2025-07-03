@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Witamy w Mai",
+    "subtitle": "Twój osobisty asystent AI do zdrowia, domu i stylu",
+    "signIn": "Zaloguj się",
+    "signUp": "Zarejestruj się",
+    "serviceProvidersTitle": "Dla Dostawców Usług",
+    "serviceProvidersDescription": "Dołącz do naszej sieci wykwalifikowanych profesjonalistów i dotarj do większej liczby klientów.",
+    "joinAsProvider": "Dołącz jako Dostawca"
+  },
+  "navigation": {
+    "welcome": "Witamy",
+    "getStarted": "Rozpocznij",
+    "maiHome": "Mai Dom",
+    "maiHealth": "Mai Zdrowie",
+    "maiStyle": "Mai Styl",
+    "joinAsProvider": "Dołącz jako Dostawca",
+    "providerPortal": "Portal Dostawcy"
+  },
+  "common": {
+    "language": "Język",
+    "currency": "Waluta",
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "success": "Sukces",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "confirm": "Potwierdź",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "previous": "Poprzedni",
+    "close": "Zamknij"
+  }
+}

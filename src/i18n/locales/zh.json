@@ -1,0 +1,66 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "save": "保存",
+    "cancel": "取消",
+    "continue": "继续",
+    "back": "返回",
+    "next": "下一步",
+    "language": "语言",
+    "currency": "货币",
+    "location": "位置",
+    "country": "国家",
+    "region": "地区",
+    "city": "城市"
+  },
+  "navigation": {
+    "welcome": "欢迎",
+    "getStarted": "开始使用",
+    "maiHome": "MaiHome",
+    "maiHealth": "MaiHealth",
+    "maiStyle": "MaiStyle",
+    "providerPortal": "服务商门户",
+    "joinAsProvider": "加入Mai服务提供商"
+  },
+  "welcome": {
+    "title": "欢迎来到Mai",
+    "subtitle": "您的个性化AI助手，专注于健康、财务和风格。",
+    "signIn": "登录",
+    "signUp": "注册"
+  },
+  "auth": {
+    "signInTitle": "登录",
+    "signInSubtitle": "访问您的个性化助手。",
+    "email": "电子邮件地址",
+    "password": "密码",
+    "fullName": "全名"
+  },
+  "maiHealth": {
+    "title": "您的MaiHealth仪表板",
+    "subtitle": "欢迎回来！通过AI驱动的洞察探索您的个性化健康之旅。",
+    "healthScore": "健康评分",
+    "recommendations": "推荐",
+    "generatingRecommendations": "正在生成您的个性化健康推荐..."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "pl": "Polski",
+    "ru": "Русский",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+    "hi": "हिन्दी"
+  }
+}

@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../my_ai_adviser"
+		},
+		{
+			"name": "flask-ai-advice-app",
+			"path": "../../../../flask-ai-advice-app"
+		}
+	],
+	"settings": {}
+}

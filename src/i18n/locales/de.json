@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "continue": "Fortfahren",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Senden",
+    "close": "Schließen",
+    "language": "Sprache",
+    "currency": "Währung",
+    "location": "Standort",
+    "country": "Land",
+    "region": "Region",
+    "city": "Stadt"
+  },
+  "navigation": {
+    "welcome": "Willkommen",
+    "getStarted": "Loslegen",
+    "maiHome": "MaiHome",
+    "maiHealth": "MaiHealth",
+    "maiStyle": "MaiStyle",
+    "providerPortal": "Anbieter-Portal",
+    "joinAsProvider": "Als Mai-Dienstleister beitreten"
+  },
+  "welcome": {
+    "title": "Willkommen bei Mai",
+    "subtitle": "Ihr personalisierter KI-Assistent für Gesundheit, Finanzen und Stil.",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren"
+  },
+  "auth": {
+    "signInTitle": "Anmelden",
+    "signInSubtitle": "Greifen Sie auf Ihren personalisierten Assistenten zu.",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "fullName": "Vollständiger Name"
+  },
+  "maiHealth": {
+    "title": "Ihr MaiHealth Dashboard",
+    "subtitle": "Willkommen zurück! Erkunden Sie Ihre personalisierte Gesundheitsreise mit KI-gestützten Erkenntnissen.",
+    "healthScore": "Gesundheitswert",
+    "recommendations": "Empfehlungen",
+    "generatingRecommendations": "Generierung Ihrer personalisierten Gesundheitsempfehlungen..."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "pl": "Polski",
+    "ru": "Русский",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+    "hi": "हिन्दी"
+  }
+}

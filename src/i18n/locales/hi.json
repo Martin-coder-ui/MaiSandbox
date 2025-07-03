@@ -1,0 +1,66 @@
+{
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "save": "सेव करें",
+    "cancel": "रद्द करें",
+    "continue": "जारी रखें",
+    "back": "वापस",
+    "next": "अगला",
+    "language": "भाषा",
+    "currency": "मुद्रा",
+    "location": "स्थान",
+    "country": "देश",
+    "region": "क्षेत्र",
+    "city": "शहर"
+  },
+  "navigation": {
+    "welcome": "स्वागत",
+    "getStarted": "शुरू करें",
+    "maiHome": "MaiHome",
+    "maiHealth": "MaiHealth",
+    "maiStyle": "MaiStyle",
+    "providerPortal": "प्रदाता पोर्टल",
+    "joinAsProvider": "Mai सेवा प्रदाता के रूप में जुड़ें"
+  },
+  "welcome": {
+    "title": "Mai में आपका स्वागत है",
+    "subtitle": "स्वास्थ्य, वित्त और शैली के लिए आपका व्यक्तिगत AI सहायक।",
+    "signIn": "साइन इन",
+    "signUp": "साइन अप"
+  },
+  "auth": {
+    "signInTitle": "साइन इन",
+    "signInSubtitle": "अपने व्यक्तिगत सहायक तक पहुंचें।",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "fullName": "पूरा नाम"
+  },
+  "maiHealth": {
+    "title": "आपका MaiHealth डैशबोर्ड",
+    "subtitle": "वापस स्वागत है! AI-संचालित अंतर्दृष्टि के साथ अपनी व्यक्तिगत स्वास्थ्य यात्रा का अन्वेषण करें।",
+    "healthScore": "स्वास्थ्य स्कोर",
+    "recommendations": "सिफारिशें",
+    "generatingRecommendations": "आपकी व्यक्तिगत स्वास्थ्य सिफारिशें तैयार की जा रही हैं..."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "pl": "Polski",
+    "ru": "Русский",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+    "hi": "हिन्दी"
+  }
+}

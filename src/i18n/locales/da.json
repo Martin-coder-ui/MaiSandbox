@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Velkommen til Mai",
+    "subtitle": "Din personlige AI-assistent til sundhed, hjem og stil",
+    "signIn": "Log ind",
+    "signUp": "Tilmeld dig",
+    "serviceProvidersTitle": "For Tjenesteudbydere",
+    "serviceProvidersDescription": "Bliv en del af vores netværk af kvalificerede fagfolk og nå flere kunder.",
+    "joinAsProvider": "Bliv Udbyder"
+  },
+  "navigation": {
+    "welcome": "Velkommen",
+    "getStarted": "Kom i gang",
+    "maiHome": "Mai Hjem",
+    "maiHealth": "Mai Sundhed",
+    "maiStyle": "Mai Stil",
+    "joinAsProvider": "Bliv Udbyder",
+    "providerPortal": "Udbyderportal"
+  },
+  "common": {
+    "language": "Sprog",
+    "currency": "Valuta",
+    "loading": "Indlæser...",
+    "error": "Fejl",
+    "success": "Succes",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "edit": "Rediger",
+    "delete": "Slet",
+    "confirm": "Bekræft",
+    "back": "Tilbage",
+    "next": "Næste",
+    "previous": "Forrige",
+    "close": "Luk"
+  }
+}

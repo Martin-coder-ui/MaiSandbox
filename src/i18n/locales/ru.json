@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Добро пожаловать в Mai",
+    "subtitle": "Ваш персональный ИИ-помощник для здоровья, дома и стиля",
+    "signIn": "Войти",
+    "signUp": "Зарегистрироваться",
+    "serviceProvidersTitle": "Для Поставщиков Услуг",
+    "serviceProvidersDescription": "Присоединяйтесь к нашей сети квалифицированных специалистов и привлекайте больше клиентов.",
+    "joinAsProvider": "Стать Поставщиком"
+  },
+  "navigation": {
+    "welcome": "Добро пожаловать",
+    "getStarted": "Начать",
+    "maiHome": "Mai Дом",
+    "maiHealth": "Mai Здоровье",
+    "maiStyle": "Mai Стиль",
+    "joinAsProvider": "Стать Поставщиком",
+    "providerPortal": "Портал Поставщика"
+  },
+  "common": {
+    "language": "Язык",
+    "currency": "Валюта",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успех",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "confirm": "Подтвердить",
+    "back": "Назад",
+    "next": "Далее",
+    "previous": "Предыдущий",
+    "close": "Закрыть"
+  }
+}

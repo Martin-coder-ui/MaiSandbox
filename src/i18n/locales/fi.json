@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Tervetuloa Maihin",
+    "subtitle": "Henkilökohtainen AI-avustajasi terveydelle, kodille ja tyylille",
+    "signIn": "Kirjaudu sisään",
+    "signUp": "Rekisteröidy",
+    "serviceProvidersTitle": "Palveluntarjoajille",
+    "serviceProvidersDescription": "Liity ammattitaitoisten ammattilaisten verkostoomme ja tavoita lisää asiakkaita.",
+    "joinAsProvider": "Liity Palveluntarjoajaksi"
+  },
+  "navigation": {
+    "welcome": "Tervetuloa",
+    "getStarted": "Aloita",
+    "maiHome": "Mai Koti",
+    "maiHealth": "Mai Terveys",
+    "maiStyle": "Mai Tyyli",
+    "joinAsProvider": "Liity Palveluntarjoajaksi",
+    "providerPortal": "Palveluntarjoajan Portaali"
+  },
+  "common": {
+    "language": "Kieli",
+    "currency": "Valuutta",
+    "loading": "Ladataan...",
+    "error": "Virhe",
+    "success": "Onnistui",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "edit": "Muokkaa",
+    "delete": "Poista",
+    "confirm": "Vahvista",
+    "back": "Takaisin",
+    "next": "Seuraava",
+    "previous": "Edellinen",
+    "close": "Sulje"
+  }
+}

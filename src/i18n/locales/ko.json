@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Mai에 오신 것을 환영합니다",
+    "subtitle": "건강, 집, 스타일을 위한 개인 AI 어시스턴트",
+    "signIn": "로그인",
+    "signUp": "회원가입",
+    "serviceProvidersTitle": "서비스 제공업체를 위해",
+    "serviceProvidersDescription": "자격을 갖춘 전문가 네트워크에 참여하여 더 많은 고객에게 다가가세요.",
+    "joinAsProvider": "제공업체로 참여"
+  },
+  "navigation": {
+    "welcome": "환영합니다",
+    "getStarted": "시작하기",
+    "maiHome": "Mai 홈",
+    "maiHealth": "Mai 건강",
+    "maiStyle": "Mai 스타일",
+    "joinAsProvider": "제공업체로 참여",
+    "providerPortal": "제공업체 포털"
+  },
+  "common": {
+    "language": "언어",
+    "currency": "통화",
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "edit": "편집",
+    "delete": "삭제",
+    "confirm": "확인",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "close": "닫기"
+  }
+}

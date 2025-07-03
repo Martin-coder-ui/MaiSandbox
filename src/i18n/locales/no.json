@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Velkommen til Mai",
+    "subtitle": "Din personlige AI-assistent for helse, hjem og stil",
+    "signIn": "Logg inn",
+    "signUp": "Registrer deg",
+    "serviceProvidersTitle": "For Tjenesteleverandører",
+    "serviceProvidersDescription": "Bli med i vårt nettverk av kvalifiserte fagfolk og nå flere kunder.",
+    "joinAsProvider": "Bli med som Leverandør"
+  },
+  "navigation": {
+    "welcome": "Velkommen",
+    "getStarted": "Kom i gang",
+    "maiHome": "Mai Hjem",
+    "maiHealth": "Mai Helse",
+    "maiStyle": "Mai Stil",
+    "joinAsProvider": "Bli med som Leverandør",
+    "providerPortal": "Leverandørportal"
+  },
+  "common": {
+    "language": "Språk",
+    "currency": "Valuta",
+    "loading": "Laster...",
+    "error": "Feil",
+    "success": "Suksess",
+    "cancel": "Avbryt",
+    "save": "Lagre",
+    "edit": "Rediger",
+    "delete": "Slett",
+    "confirm": "Bekreft",
+    "back": "Tilbake",
+    "next": "Neste",
+    "previous": "Forrige",
+    "close": "Lukk"
+  }
+}

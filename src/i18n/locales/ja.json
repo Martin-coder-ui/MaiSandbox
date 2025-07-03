@@ -1,0 +1,66 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "continue": "続行",
+    "back": "戻る",
+    "next": "次へ",
+    "language": "言語",
+    "currency": "通貨",
+    "location": "場所",
+    "country": "国",
+    "region": "地域",
+    "city": "都市"
+  },
+  "navigation": {
+    "welcome": "ようこそ",
+    "getStarted": "始める",
+    "maiHome": "MaiHome",
+    "maiHealth": "MaiHealth",
+    "maiStyle": "MaiStyle",
+    "providerPortal": "プロバイダーポータル",
+    "joinAsProvider": "Maiサービスプロバイダーとして参加"
+  },
+  "welcome": {
+    "title": "Maiへようこそ",
+    "subtitle": "健康、財務、スタイルのためのパーソナライズされたAIアシスタント。",
+    "signIn": "サインイン",
+    "signUp": "サインアップ"
+  },
+  "auth": {
+    "signInTitle": "サインイン",
+    "signInSubtitle": "パーソナライズされたアシスタントにアクセス。",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "fullName": "フルネーム"
+  },
+  "maiHealth": {
+    "title": "あなたのMaiHealthダッシュボード",
+    "subtitle": "おかえりなさい！AI駆動のインサイトでパーソナライズされた健康の旅を探索しましょう。",
+    "healthScore": "健康スコア",
+    "recommendations": "推奨事項",
+    "generatingRecommendations": "パーソナライズされた健康推奨事項を生成中..."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "pl": "Polski",
+    "ru": "Русский",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+    "hi": "हिन्दी"
+  }
+}

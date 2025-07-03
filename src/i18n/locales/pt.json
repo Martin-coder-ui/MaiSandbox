@@ -1,0 +1,36 @@
+{
+  "welcome": {
+    "title": "Bem-vindo ao Mai",
+    "subtitle": "Seu assistente de IA pessoal para saúde, casa e estilo",
+    "signIn": "Entrar",
+    "signUp": "Cadastrar",
+    "serviceProvidersTitle": "Para Prestadores de Serviços",
+    "serviceProvidersDescription": "Junte-se à nossa rede de profissionais qualificados e alcance mais clientes.",
+    "joinAsProvider": "Junte-se como Prestador"
+  },
+  "navigation": {
+    "welcome": "Bem-vindo",
+    "getStarted": "Começar",
+    "maiHome": "Mai Casa",
+    "maiHealth": "Mai Saúde",
+    "maiStyle": "Mai Estilo",
+    "joinAsProvider": "Junte-se como Prestador",
+    "providerPortal": "Portal de Prestadores"
+  },
+  "common": {
+    "language": "Idioma",
+    "currency": "Moeda",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "close": "Fechar"
+  }
+}

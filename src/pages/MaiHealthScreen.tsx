@@ -1,0 +1,372 @@
+import React from "react";
+import VoiceAgent from "../components/VoiceAgent";
+import SeasonalNotifications from "../components/SeasonalNotifications";
+import { Calendar, Activity, Heart, Users, Stethoscope, Shield, TrendingUp, Brain, Apple } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { useMaiHealthRecommendations } from "../hooks/useMaiHealthRecommendations";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { useSeasonalRecommendations } from "../hooks/useSeasonalRecommendations";
+
+export default function MaiHealthScreen() {
+  const { user } = useAuth();
+  const { location } = useGeolocation();
+  const { getCurrentSeason } = useSeasonalRecommendations();
+  const currentSeason = getCurrentSeason();
+  
+  const { recommendations: healthRecommendations, loading } = useMaiHealthRecommendations(
+    user?.profileData,
+    location,
+    currentSeason
+  );
+
+  const renderRecommendationCard = (item: any, colorClass: string) => (
+    <div key={item.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow duration-200">
+      <img 
+        src={item.imageUrl} 
+        alt={item.name} 
+        className="w-full h-32 object-cover rounded-lg mb-3"
+        loading="lazy"
+      />
+      <h4 className="font-medium text-gray-900 dark:text-white mb-1">{item.name}</h4>
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{item.description}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{item.reason}</p>
+      
+      {/* Provider information */}
+      {item.provider && (
+        <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">
+          Provider: {item.provider}
+        </p>
+      )}
+      
+      {/* Location-specific availability */}
+      {item.localAvailability && (
+        <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+          📍 {item.localAvailability}
+        </p>
+      )}
+      
+      {/* Category-specific details */}
+      {item.urgency && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          Urgency: {item.urgency} • Frequency: {item.frequency}
+        </p>
+      )}
+      {item.difficulty && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          Difficulty: {item.difficulty} • Time: {item.timeCommitment}
+        </p>
+      )}
+      {item.condition && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          For: {item.condition}
+        </p>
+      )}
+      {item.approach && (
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+          Approach: {item.approach}
+        </p>
+      )}
+      {item.season && (
+        <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">
+          🌟 {item.season.charAt(0).toUpperCase() + item.season.slice(1)} recommendation
+        </p>
+      )}
+      
+      {/* Benefits/Evidence */}
+      {(item.benefits || item.evidenceBased) && (
+        <div className="mb-2">
+          {item.benefits && (
+            <>
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Benefits:</p>
+              <ul className="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside">
+                {item.benefits.slice(0, 3).map((benefit: string, index: number) => (
+                  <li key={index}>{benefit}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {item.evidenceBased && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">✓ Evidence-based treatment</p>
+          )}
+        </div>
+      )}
+      
+      {/* Personalized reason */}
+      <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+        <p className="text-xs text-blue-800 dark:text-blue-200">
+          <strong>Why this suits you:</strong> {item.personalizedReason}
+        </p>
+      </div>
+      
+      <div className="flex items-center justify-between mt-3">
+        <span className={`text-xs px-2 py-1 rounded ${colorClass}`}>
+          {item.matchScore}% Match
+        </span>
+        <button className="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
+          Learn More
+        </button>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="p-8 max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600 dark:text-gray-300">Generating your personalized health recommendations...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+          Your MaiHealth Dashboard
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          Welcome back! Explore your personalized health journey with AI-powered insights and voice assistance.
+        </p>
+        
+        {/* Context Information */}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {user?.profileData?.healthData && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-800 dark:text-red-200">
+                <strong>Health Profile:</strong> {user.profileData.age} years • 
+                {user.profileData.healthData.medicalConditions?.length ? 
+                  ` ${user.profileData.healthData.medicalConditions.length} conditions` : 
+                  ' No major conditions'
+                }
+              </p>
+            </div>
+          )}
+          
+          {location && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800  dark:text-blue-200">
+                <strong>Location:</strong> {location.city}, {location.region}
+              </p>
+            </div>
+          )}
+          
+          <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <p className="text-sm text-green-800 dark:text-green-200">
+              <strong>Recommendations:</strong> {
+                healthRecommendations.preventiveCare.length + 
+                healthRecommendations.lifestyle.length + 
+                healthRecommendations.conditionManagement.length + 
+                healthRecommendations.mentalWellbeing.length + 
+                healthRecommendations.seasonalHealth.length
+              } personalized
+            </p>
+          </div>
+        </div>
+
+        {/* Health Risk Factors */}
+        {user?.profileData?.healthData?.familyMedicalHistory && user.profileData.healthData.familyMedicalHistory.length > 0 && (
+          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Family History Risk Factors:</strong> {user.profileData.healthData.familyMedicalHistory.slice(0, 3).join(', ')}
+              {user.profileData.healthData.familyMedicalHistory.length > 3 && ` and ${user.profileData.healthData.familyMedicalHistory.length - 3} more`}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Voice Agent - Featured prominently */}
+        <div className="lg:col-span-1">
+          <VoiceAgent />
+        </div>
+
+        {/* Quick Stats */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Health Score</h3>
+              <Heart className="w-6 h-6 text-red-500" />
+            </div>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">85%</div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Great progress this week!</p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recommendations</h3>
+              <TrendingUp className="w-6 h-6 text-blue-500" />
+            </div>
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              {healthRecommendations.preventiveCare.length + 
+               healthRecommendations.lifestyle.length + 
+               healthRecommendations.conditionManagement.length + 
+               healthRecommendations.mentalWellbeing.length + 
+               healthRecommendations.seasonalHealth.length}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Personalized for you</p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Appointments</h3>
+              <Calendar className="w-6 h-6 text-purple-500" />
+            </div>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">3</div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Upcoming this month</p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Care Team</h3>
+              <Users className="w-6 h-6 text-teal-500" />
+            </div>
+            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-2">5</div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Active providers</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Seasonal Notifications */}
+      <div className="mb-8">
+        <SeasonalNotifications />
+      </div>
+
+      {/* Dynamic Health Recommendations */}
+      <div className="space-y-8">
+        {/* Preventive Care */}
+        {healthRecommendations.preventiveCare.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Preventive Care</h3>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {healthRecommendations.preventiveCare.length} recommendations
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {healthRecommendations.preventiveCare.map((item) => 
+                renderRecommendationCard(item, 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200')
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Lifestyle Recommendations */}
+        {healthRecommendations.lifestyle.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Activity className="w-6 h-6 text-green-600 dark:text-green-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Lifestyle Improvements</h3>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {healthRecommendations.lifestyle.length} suggestions
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {healthRecommendations.lifestyle.map((item) => 
+                renderRecommendationCard(item, 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200')
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Condition Management */}
+        {healthRecommendations.conditionManagement.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Stethoscope className="w-6 h-6 text-red-600 dark:text-red-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Condition Management</h3>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {healthRecommendations.conditionManagement.length} programs
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {healthRecommendations.conditionManagement.map((item) => 
+                renderRecommendationCard(item, 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200')
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mental Wellbeing */}
+        {healthRecommendations.mentalWellbeing.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Mental Wellbeing</h3>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {healthRecommendations.mentalWellbeing.length} resources
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {healthRecommendations.mentalWellbeing.map((item) => 
+                renderRecommendationCard(item, 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200')
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Seasonal Health */}
+        {healthRecommendations.seasonalHealth.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Apple className="w-6 h-6 text-orange-600 dark:text-orange-400 mr-3" />
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)} Health
+                </h3>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {healthRecommendations.seasonalHealth.length} seasonal tips
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {healthRecommendations.seasonalHealth.map((item) => 
+                renderRecommendationCard(item, 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200')
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Activity */}
+      <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Consultation with Dr. Smith</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Reviewed your latest health metrics</p>
+            </div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">2 hours ago</span>
+          </div>
+          
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Physiotherapy Session</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Completed lower back exercises</p>
+            </div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">1 day ago</span>
+          </div>
+          
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white">Nutrition Plan Updated</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">New meal recommendations available</p>
+            </div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">3 days ago</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

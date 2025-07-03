@@ -1,0 +1,66 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "next": "التالي",
+    "language": "اللغة",
+    "currency": "العملة",
+    "location": "الموقع",
+    "country": "البلد",
+    "region": "المنطقة",
+    "city": "المدينة"
+  },
+  "navigation": {
+    "welcome": "مرحباً",
+    "getStarted": "البدء",
+    "maiHome": "MaiHome",
+    "maiHealth": "MaiHealth",
+    "maiStyle": "MaiStyle",
+    "providerPortal": "بوابة مقدم الخدمة",
+    "joinAsProvider": "انضم كمقدم خدمة Mai"
+  },
+  "welcome": {
+    "title": "مرحباً بك في Mai",
+    "subtitle": "مساعدك الذكي المخصص للصحة والمالية والأناقة.",
+    "signIn": "تسجيل الدخول",
+    "signUp": "التسجيل"
+  },
+  "auth": {
+    "signInTitle": "تسجيل الدخول",
+    "signInSubtitle": "الوصول إلى مساعدك المخصص.",
+    "email": "عنوان البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "fullName": "الاسم الكامل"
+  },
+  "maiHealth": {
+    "title": "لوحة تحكم MaiHealth الخاصة بك",
+    "subtitle": "مرحباً بعودتك! استكشف رحلتك الصحية المخصصة مع رؤى مدعومة بالذكاء الاصطناعي.",
+    "healthScore": "نقاط الصحة",
+    "recommendations": "التوصيات",
+    "generatingRecommendations": "جاري إنشاء توصياتك الصحية المخصصة..."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "pl": "Polski",
+    "ru": "Русский",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+    "hi": "हिन्दी"
+  }
+}
