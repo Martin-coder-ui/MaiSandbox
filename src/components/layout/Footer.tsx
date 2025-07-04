@@ -65,12 +65,16 @@ const Footer: React.FC = () => {
             </ul>
           </div>
           
+          <div className="md:col-span-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Company</h3>
+            <ul className="space-y-3">
+              <li>
                 <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200 flex items-center">
                   <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mr-2"></span>
                   About Us
                 </a>
-              <li className="text-gray-600 dark:text-gray-400">
-                info@mai.com
+              </li>
+              <li>
                 <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200 flex items-center">
                   <span className="w-1.5 h-1.5 bg-primary-500 rounded-full mr-2"></span>
                   Careers
