@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Calendar, MapPin, Heart, Users, Target, Activity, Palette, FileText } from 'lucide-react';
+import { User, Calendar, MapPin, Heart, Users, Target, Activity, Palette, FileText, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
 import CVUploadForm from './CVUploadForm';
 
 const PersonalDetailsForm: React.FC = () => {
@@ -102,19 +102,33 @@ const PersonalDetailsForm: React.FC = () => {
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
       {[1, 2, 3, 4, 5].map((step) => (
-        <div key={step} className="flex items-center">
+        <div key={step} className="flex items-center relative">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-200 ${
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300 ${
               step <= currentStep
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
+            onClick={() => step < currentStep && setCurrentStep(step)}
           >
-            {step}
+            {step < currentStep ? (
+              <CheckCircle className="w-6 h-6" />
+            ) : (
+              <span className="text-base">{step}</span>
+            )}
           </div>
+          {step <= currentStep && (
+            <span className="absolute -bottom-6 text-xs font-medium text-primary-600 dark:text-primary-400 whitespace-nowrap">
+              {step === 1 && "Basic Info"}
+              {step === 2 && "Lifestyle"}
+              {step === 3 && "Goals"}
+              {step === 4 && "Health"}
+              {step === 5 && "Career"}
+            </span>
+          )}
           {step < totalSteps && (
             <div
-              className={`w-16 h-1 mx-2 transition-colors duration-200 ${
+              className={`w-16 h-1 mx-2 transition-all duration-300 ${
                 step < currentStep ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               }`}
             />
@@ -127,8 +141,10 @@ const PersonalDetailsForm: React.FC = () => {
   const renderBasicInformation = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <User className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Tell Us About Yourself</h2>
+        <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <User className="w-10 h-10 text-primary-600 dark:text-primary-400" />
+        </div>
+        <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">Tell Us About Yourself</h2>
         <p className="text-gray-600 dark:text-gray-300">
           This information helps us personalize your Mai experience across health, finance, and style.
         </p>
@@ -143,7 +159,7 @@ const PersonalDetailsForm: React.FC = () => {
             type="number"
             value={formData.age}
             onChange={(e) => handleInputChange('age', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
             placeholder="Enter your age"
             min="13"
             max="120"
@@ -157,7 +173,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.gender}
             onChange={(e) => handleInputChange('gender', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select gender identity</option>
             <option value="female">Female</option>
@@ -180,7 +196,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.sexualOrientation}
             onChange={(e) => handleInputChange('sexualOrientation', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select sexual orientation</option>
             <option value="heterosexual">Heterosexual/Straight</option>
@@ -204,7 +220,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.pronouns}
             onChange={(e) => handleInputChange('pronouns', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select pronouns</option>
             <option value="she/her">She/Her</option>
@@ -232,7 +248,7 @@ const PersonalDetailsForm: React.FC = () => {
               type="text"
               value={formData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input pl-10"
               placeholder="e.g., London, UK"
             />
           </div>
@@ -245,7 +261,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.relationshipStatus}
             onChange={(e) => handleInputChange('relationshipStatus', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select relationship status</option>
             <option value="single">Single</option>
@@ -267,7 +283,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.socialEngagement}
             onChange={(e) => handleInputChange('socialEngagement', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">How socially connected do you feel?</option>
             <option value="connected">Very connected - I have strong social networks</option>
@@ -278,13 +294,13 @@ const PersonalDetailsForm: React.FC = () => {
       </div>
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <div className="flex items-start">
-          <Heart className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+        <div className="flex items-start animate-fade-in">
+          <Heart className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 mr-3 flex-shrink-0" />
           <div>
-            <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+            <h4 className="text-sm font-medium text-primary-900 dark:text-primary-100 mb-1">
               Why we ask about identity and orientation
             </h4>
-            <p className="text-sm text-blue-800 dark:text-blue-200">
+            <p className="text-sm text-primary-800 dark:text-primary-200">
               This information helps us provide more inclusive and relevant recommendations for healthcare providers, 
               financial services, and style choices. Your data is private and secure, and you can update these preferences anytime.
             </p>
@@ -297,8 +313,10 @@ const PersonalDetailsForm: React.FC = () => {
   const renderLifestylePreferences = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <Activity className="w-12 h-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Your Lifestyle</h2>
+        <div className="w-20 h-20 bg-secondary-100 dark:bg-secondary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Activity className="w-10 h-10 text-secondary-600 dark:text-secondary-400" />
+        </div>
+        <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">Your Lifestyle</h2>
         <p className="text-gray-600 dark:text-gray-300">
           Help us understand your current lifestyle and preferences.
         </p>
@@ -312,7 +330,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.fitnessLevel}
             onChange={(e) => handleInputChange('fitnessLevel', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select fitness level</option>
             <option value="sedentary">Sedentary (little to no exercise)</option>
@@ -330,7 +348,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.dietaryPreferences}
             onChange={(e) => handleInputChange('dietaryPreferences', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select dietary preference</option>
             <option value="omnivore">Omnivore (no restrictions)</option>
@@ -353,7 +371,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.stylePreference}
             onChange={(e) => handleInputChange('stylePreference', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select style preference</option>
             <option value="classic">Classic/Traditional</option>
@@ -375,7 +393,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.budgetRange}
             onChange={(e) => handleInputChange('budgetRange', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select budget range</option>
             <option value="under-500">Under £500</option>
@@ -395,7 +413,7 @@ const PersonalDetailsForm: React.FC = () => {
           <select
             value={formData.incomeRange}
             onChange={(e) => handleInputChange('incomeRange', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input"
           >
             <option value="">Select income range</option>
             <option value="under-20k">Under £20,000</option>
@@ -415,8 +433,10 @@ const PersonalDetailsForm: React.FC = () => {
   const renderGoalsAndInterests = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <Target className="w-12 h-12 text-purple-600 dark:text-purple-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Your Goals & Interests</h2>
+        <div className="w-20 h-20 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Target className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+        </div>
+        <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">Your Goals & Interests</h2>
         <p className="text-gray-600 dark:text-gray-300">
           What would you like to achieve with Mai's help?
         </p>
@@ -446,12 +466,16 @@ const PersonalDetailsForm: React.FC = () => {
               'Career advancement',
               'Better work-life balance'
             ].map((goal) => (
-              <label key={goal} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={goal} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.primaryGoals.includes(goal) 
+                  ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.primaryGoals.includes(goal)}
                   onChange={(e) => handleArrayChange('primaryGoals', goal, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{goal}</span>
               </label>
@@ -478,12 +502,16 @@ const PersonalDetailsForm: React.FC = () => {
               'Pension planning',
               'Wealth building'
             ].map((goal) => (
-              <label key={goal} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={goal} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.financialGoals.includes(goal) 
+                  ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.financialGoals.includes(goal)}
                   onChange={(e) => handleArrayChange('financialGoals', goal, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{goal}</span>
               </label>
@@ -516,12 +544,16 @@ const PersonalDetailsForm: React.FC = () => {
               'Nature & Outdoors',
               'Gaming'
             ].map((interest) => (
-              <label key={interest} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={interest} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.interests.includes(interest) 
+                  ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.interests.includes(interest)}
                   onChange={(e) => handleArrayChange('interests', interest, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{interest}</span>
               </label>
@@ -535,8 +567,10 @@ const PersonalDetailsForm: React.FC = () => {
   const renderHealthInformation = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <Heart className="w-12 h-12 text-red-600 dark:text-red-400 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Health Information</h2>
+        <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Heart className="w-10 h-10 text-red-600 dark:text-red-400" />
+        </div>
+        <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-2">Health Information</h2>
         <p className="text-gray-600 dark:text-gray-300">
           This helps us provide better health recommendations and connect you with appropriate healthcare providers.
         </p>
@@ -566,12 +600,16 @@ const PersonalDetailsForm: React.FC = () => {
               'ADHD',
               'Other'
             ].map((condition) => (
-              <label key={condition} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={condition} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.healthConditions.includes(condition) 
+                  ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.healthConditions.includes(condition)}
                   onChange={(e) => handleArrayChange('healthConditions', condition, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{condition}</span>
               </label>
@@ -598,12 +636,16 @@ const PersonalDetailsForm: React.FC = () => {
               'Vitamins/Supplements',
               'Other prescription medication'
             ].map((medication) => (
-              <label key={medication} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={medication} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.medications.includes(medication) 
+                  ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.medications.includes(medication)}
                   onChange={(e) => handleArrayChange('medications', medication, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{medication}</span>
               </label>
@@ -635,12 +677,16 @@ const PersonalDetailsForm: React.FC = () => {
               'Dust mites',
               'Other'
             ].map((allergy) => (
-              <label key={allergy} className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+              <label key={allergy} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
+                formData.allergies.includes(allergy) 
+                  ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20' 
+                  : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}>
                 <input
                   type="checkbox"
                   checked={formData.allergies.includes(allergy)}
                   onChange={(e) => handleArrayChange('allergies', allergy, e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">{allergy}</span>
               </label>
@@ -650,8 +696,8 @@ const PersonalDetailsForm: React.FC = () => {
       </div>
 
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-        <div className="flex items-start">
-          <Heart className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-3 flex-shrink-0" />
+        <div className="flex items-start animate-fade-in">
+          <Shield className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 mr-3 flex-shrink-0" />
           <div>
             <h4 className="text-sm font-medium text-green-900 dark:text-green-100 mb-1">
               Your health data is secure
@@ -676,15 +722,15 @@ const PersonalDetailsForm: React.FC = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        return renderBasicInformation();
+        return <div className="animate-fade-in">{renderBasicInformation()}</div>;
       case 2:
-        return renderLifestylePreferences();
+        return <div className="animate-fade-in">{renderLifestylePreferences()}</div>;
       case 3:
-        return renderGoalsAndInterests();
+        return <div className="animate-fade-in">{renderGoalsAndInterests()}</div>;
       case 4:
-        return renderHealthInformation();
+        return <div className="animate-fade-in">{renderHealthInformation()}</div>;
       case 5:
-        return renderCVUpload();
+        return <div className="animate-fade-in">{renderCVUpload()}</div>;
       default:
         return renderBasicInformation();
     }
@@ -725,10 +771,10 @@ const PersonalDetailsForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 animate-fade-in">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Complete Your Mai Profile</h1>
+          <h1 className="text-3xl font-display font-bold text-gray-900 dark:text-white">Complete Your Mai Profile</h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">
             Step {currentStep} of {totalSteps}: {getStepTitle()}
           </p>
@@ -736,19 +782,20 @@ const PersonalDetailsForm: React.FC = () => {
 
         {renderStepIndicator()}
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 transition-all duration-300">
           {renderCurrentStep()}
 
           <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={prevStep}
               disabled={currentStep === 1}
-              className={`px-6 py-2 rounded-lg transition-colors duration-200 ${
+              className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center ${
                 currentStep === 1
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-sm'
               }`}
             >
+              <ChevronLeft className={`w-4 h-4 mr-1 ${currentStep === 1 ? 'opacity-50' : ''}`} />
               Previous
             </button>
 
@@ -756,20 +803,22 @@ const PersonalDetailsForm: React.FC = () => {
               <button
                 onClick={nextStep}
                 disabled={!isStepValid()}
-                className={`px-6 py-2 rounded-lg transition-colors duration-200 ${
+                className={`px-6 py-2 rounded-lg transition-all duration-200 flex items-center ${
                   isStepValid()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow'
                     : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                 }`}
               >
                 Next Step
+                <ChevronRight className={`w-4 h-4 ml-1 ${!isStepValid() ? 'opacity-50' : ''}`} />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-all duration-200 shadow-sm hover:shadow flex items-center"
               >
                 Complete Profile
+                <CheckCircle className="w-4 h-4 ml-2" />
               </button>
             )}
           </div>
