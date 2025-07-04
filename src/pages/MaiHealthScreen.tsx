@@ -1,7 +1,7 @@
 import React from "react";
 import VoiceAgent from "../components/VoiceAgent";
 import SeasonalNotifications from "../components/SeasonalNotifications";
-import { Calendar, Activity, Heart, Users, Stethoscope, Shield, TrendingUp, Brain, Apple, ChevronRight } from "lucide-react";
+import { Calendar, Activity, Heart, Users, Stethoscope, Shield, TrendingUp, Brain, Apple, ChevronRight, Sparkles } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useMaiHealthRecommendations } from "../hooks/useMaiHealthRecommendations";
 import { useGeolocation } from "../hooks/useGeolocation";
