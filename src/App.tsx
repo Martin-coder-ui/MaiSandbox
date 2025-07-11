@@ -11,6 +11,7 @@ import MaiMoneyScreen from './pages/MaiMoneyScreen';
 import MaiHomeScreen from './pages/MaiHomeScreen';
 import MaiHealthScreen from './pages/MaiHealthScreen';
 import MaiStyleScreen from './pages/MaiStyleScreen';
+import MaiSocialScreen from './pages/MaiSocialScreen';
 import SeasonalCarousel from './pages/SeasonalCarousel';
 import PersonalDetailsForm from './components/user/PersonalDetailsForm';
 import ScanOrAvatarScreen from './pages/ScanOrAvatarScreen';
@@ -38,6 +39,7 @@ const App: React.FC = () => {
             <Route path="/maihome" element={<MaiHomeScreen />} />
             <Route path="/maihealth" element={<MaiHealthScreen />} />
             <Route path="/maistyle" element={<MaiStyleScreen />} />
+            <Route path="/maisocial" element={<MaiSocialScreen />} />
             <Route path="/seasons" element={<SeasonalCarousel />} />
             <Route path="/scan" element={<ScanScreen />} />
             <Route path="/avatar" element={<AvatarScreen />} />

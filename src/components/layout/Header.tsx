@@ -65,6 +65,15 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
             {t('navigation.maiStyle')}
           </Link>
           <Link 
+            to="/maisocial" 
+            className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <div className="relative">
+              MaiSocial
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </div>
+          </Link>
+          <Link 
             to="/provider-register" 
             className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors duration-200 shadow-sm hover:shadow"
           >
@@ -159,6 +168,13 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
               onClick={() => setIsMenuOpen(false)}
             >
               {t('navigation.maiStyle')}
+            </Link>
+            <Link 
+              to="/maisocial" 
+              className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              MaiSocial
             </Link>
             <Link 
               to="/provider-register" 
