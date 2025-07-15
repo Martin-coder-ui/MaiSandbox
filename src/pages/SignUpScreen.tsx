@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 export default function SignUpScreen() {
   const navigate = useNavigate();
@@ -63,13 +64,51 @@ export default function SignUpScreen() {
     }
     
     setIsLoading(true);
+    setError('');
     
-    // Simulate account creation process
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Create user in Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name
+          }
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Create profile in profiles table
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: data.user.id,
+              name: formData.name,
+              email: formData.email,
+              type: 'client',
+              service_areas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
+              social_engagement: 'moderate'
+            }
+          ]);
+        
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+      
       // Navigate to the personal details form after successful sign-up
+      setIsLoading(false);
       navigate('/start');
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during sign up. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (

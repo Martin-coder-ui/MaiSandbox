@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export interface User {
   id: string;
@@ -693,10 +694,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session) {
         // Get user data from Supabase
         const { data: userData, error } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
+        
+        if (error || !userData) {
+          console.error('Error fetching user data:', error);
+          // Fall back to using the session user data
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || 'User',
+            type: 'client',
+            serviceAreas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
+            socialEngagement: 'moderate'
+          });
+        } else {
+          setUser(userData as User);
+        }
+        
+        setIsAuthenticated(true);
+      } else {
+        // Check for saved user in localStorage (fallback for development)
+        const savedUser = localStorage.getItem('mai_current_user');
+        if (savedUser) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+            setIsAuthenticated(true);
+          } catch (error) {
+            console.error('Error parsing saved user:', error);
+          }
+        }
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // Get user data from Supabase
+          const { data: userData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error || !userData) {
+            console.error('Error fetching user data:', error);
+            // Fall back to using the session user data
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || 'User',
+              type: 'client',
+              serviceAreas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
+              socialEngagement: 'moderate'
+            });
+          } else {
+            setUser(userData as User);
+          }
+          
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+    
+    // Clean up subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
         
         if (error || !userData) {
           console.error('Error fetching user data:', error);
@@ -779,7 +852,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.setItem('mai_current_user', JSON.stringify(foundUser));
             return true;
           }
+        
+        // Fall back to test credentials for development
+        if (TEST_CREDENTIALS[email] === password) {
+          const foundUser = TEST_USERS.find(u => u.email === email);
+          if (foundUser) {
+            setUser(foundUser);
+            setIsAuthenticated(true);
+            localStorage.setItem('mai_current_user', JSON.stringify(foundUser));
+            return true;
+          }
         }
+        
+        return false;
         
         return false;
       }
@@ -788,7 +873,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      
+      // Successful Supabase login
+      return true;
     }
   };
 
@@ -796,6 +883,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.signOut().then(() => {
       setUser(null);
       setIsAuthenticated(false);
+      localStorage.removeItem('mai_current_user');
+    }).catch(error => {
+      console.error('Error signing out:', error);
+    });
       localStorage.removeItem('mai_current_user');
     }).catch(error => {
       console.error('Error signing out:', error);

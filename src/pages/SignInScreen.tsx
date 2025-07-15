@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, LogIn, User, Users, Briefcase } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 export default function SignInScreen() {
   const navigate = useNavigate();
@@ -21,15 +22,41 @@ export default function SignInScreen() {
     setError('');
     
     try {
-      const success = await login(email, password);
-      if (success) {
+      // Try Supabase auth first
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        // Fall back to test user login
+        const success = await login(email, password);
+        if (!success) {
+          setError('Invalid email or password. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Get user data
+      const user = data?.user || testUsers.find(u => u.email === email);
+      
+      if (user) {
         // Navigate based on user type
-        const user = testUsers.find(u => u.email === email);
-        if (user?.type === 'provider') {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('type, service_areas')
+          .eq('id', user.id)
+          .single();
+        
+        const userType = profileData?.type || user.type;
+        const serviceAreas = profileData?.service_areas || user.serviceAreas;
+        
+        if (userType === 'provider') {
           navigate('/provider-dashboard');
         } else {
           // Navigate to the first service area for clients
-          const firstService = user?.serviceAreas[0];
+          const firstService = serviceAreas?.[0];
           if (firstService === 'MaiHealth') {
             navigate('/maihealth');
           } else if (firstService === 'MaiHome') {
@@ -41,7 +68,7 @@ export default function SignInScreen() {
           }
         }
       } else {
-        setError('Invalid email or password. Please try again.');
+        setError('User not found. Please try again.');
       }
     } catch (err) {
       setError('An error occurred during sign in. Please try again.');
