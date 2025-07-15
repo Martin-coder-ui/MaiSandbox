@@ -21,7 +21,8 @@ import {
   Volume2,
   VolumeX,
   Maximize,
-  X
+  X,
+  Sparkles
 } from "lucide-react";
 
 export default function MaiSocialScreen() {
