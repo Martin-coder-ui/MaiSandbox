@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Video, X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface VideoUploaderProps {
   onVideoSelect: (file: File | null) => void;
@@ -85,42 +86,61 @@ const VideoUploader: React.FC<VideoUploaderProps> = ({
     setPreviewUrl(url);
     
     // Simulate upload process
-    simulateUpload(file);
+    uploadVideo(file);
   };
 
-  const simulateUpload = (file: File) => {
+  const uploadVideo = async (file: File) => {
     setUploading(true);
     setUploadStatus('uploading');
     setUploadProgress(0);
     
-    // Simulate upload progress
-    const totalSteps = 10;
-    let currentStep = 0;
-    
-    const interval = setInterval(() => {
-      currentStep++;
-      const progress = Math.round((currentStep / totalSteps) * 100);
-      setUploadProgress(progress);
+    try {
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `videos/${fileName}`;
       
-      if (currentStep === totalSteps) {
-        clearInterval(interval);
-        setUploadStatus('processing');
-        
-        // Simulate processing
-        setTimeout(() => {
-          setUploadStatus('complete');
-          setUploading(false);
-          
-          // In a real app, these URLs would come from the server
-          const mockVideoUrl = URL.createObjectURL(file);
-          const mockThumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
-          
-          if (onUploadComplete) {
-            onUploadComplete(mockVideoUrl, mockThumbnailUrl);
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('social-media')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          onUploadProgress: (progress) => {
+            const percent = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress(percent);
           }
-        }, 1500);
-      }
-    }, 300);
+        });
+      
+      if (error) throw error;
+      
+      // Set status to processing
+      setUploadStatus('processing');
+      
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('social-media')
+        .getPublicUrl(filePath);
+      
+      // In a real app, you would generate a thumbnail from the video
+      // For now, we'll use a placeholder
+      const thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+      
+      // Simulate processing time
+      setTimeout(() => {
+        setUploadStatus('complete');
+        setUploading(false);
+        
+        if (onUploadComplete) {
+          onUploadComplete(urlData.publicUrl, thumbnailUrl);
+        }
+      }, 1500);
+    } catch (err) {
+      console.error('Error uploading video:', err);
+      setUploadStatus('error');
+      setError('Failed to upload video. Please try again.');
+      setUploading(false);
+    }
   };
 
   const removeFile = () => {

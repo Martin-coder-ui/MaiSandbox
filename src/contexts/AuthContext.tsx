@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface User {
   id: string;
@@ -685,38 +686,120 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for saved user session
-    const savedUser = localStorage.getItem('mai_current_user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
+    // Check for active Supabase session
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Get user data from Supabase
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error || !userData) {
+          console.error('Error fetching user data:', error);
+          // Fall back to using the session user data
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || 'User',
+            type: 'client',
+            serviceAreas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
+            socialEngagement: 'moderate'
+          });
+        } else {
+          setUser(userData as User);
+        }
+        
         setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error loading saved user:', error);
-        localStorage.removeItem('mai_current_user');
       }
-    }
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // Get user data from Supabase
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error || !userData) {
+            console.error('Error fetching user data:', error);
+            // Fall back to using the session user data
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata?.name || 'User',
+              type: 'client',
+              serviceAreas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
+              socialEngagement: 'moderate'
+            });
+          } else {
+            setUser(userData as User);
+          }
+          
+          setIsAuthenticated(true);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+    
+    // Clean up subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Check test credentials
-    if (TEST_CREDENTIALS[email] === password) {
-      const foundUser = TEST_USERS.find(u => u.email === email);
-      if (foundUser) {
-        setUser(foundUser);
-        setIsAuthenticated(true);
-        localStorage.setItem('mai_current_user', JSON.stringify(foundUser));
-        return true;
+    try {
+      // First try to sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error('Supabase auth error:', error);
+        
+        // Fall back to test credentials for development
+        if (TEST_CREDENTIALS[email] === password) {
+          const foundUser = TEST_USERS.find(u => u.email === email);
+          if (foundUser) {
+            setUser(foundUser);
+            setIsAuthenticated(true);
+            localStorage.setItem('mai_current_user', JSON.stringify(foundUser));
+            return true;
+          }
+        }
+        
+        return false;
       }
+      
+      // Successful Supabase login
+      return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('mai_current_user');
+    supabase.auth.signOut().then(() => {
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('mai_current_user');
+    }).catch(error => {
+      console.error('Error signing out:', error);
+    });
   };
 
   const switchUser = (userId: string) => {

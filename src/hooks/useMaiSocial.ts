@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User } from '../contexts/AuthContext';
+import { supabase, socialApi } from '../lib/supabase';
 
 // Types for social media functionality
 export interface SocialPost {
@@ -68,16 +69,54 @@ export const useMaiSocial = (user?: User | null) => {
     setError(null);
     
     try {
-      // In a real app, this would be an API call
-      // For now, we'll simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const postsData = await socialApi.getPosts(filter);
       
-      // Simulated posts data
-      const mockPosts: SocialPost[] = [
-        // This would be populated from an API
-      ];
+      // Transform the data to match our SocialPost interface
+      const formattedPosts: SocialPost[] = postsData.map((post: any) => {
+        // Extract media from the post
+        const media = post.media ? post.media.map((m: any) => ({
+          type: m.media_type,
+          url: m.url,
+          thumbnail: m.thumbnail_url
+        })) : undefined;
+        
+        // Check if the current user has liked this post
+        const userLiked = post.likes?.some((like: any) => like.user_id === user.id) || false;
+        
+        // Check if the current user has saved this post
+        const userSaved = post.saved?.some((save: any) => save.user_id === user.id) || false;
+        
+        // Extract tags
+        const tags = post.tags ? post.tags.map((t: any) => t.tag.name) : [];
+        
+        return {
+          id: post.id,
+          userId: post.user_id,
+          userName: post.user?.name || 'Unknown User',
+          userAvatar: post.user?.avatar_url || 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
+          userType: post.user?.type || 'client',
+          userBadge: post.user?.badge,
+          content: post.content,
+          media,
+          stats: {
+            likes: post.likes?.length || 0,
+            comments: post.comments?.length || 0,
+            shares: 0 // We don't track shares in the database yet
+          },
+          timestamp: post.created_at,
+          tags,
+          vertical: post.vertical,
+          achievement: post.achievement_id ? {
+            title: post.achievement?.title || '',
+            description: post.achievement?.description || '',
+            icon: post.achievement?.icon || ''
+          } : undefined,
+          liked: userLiked,
+          saved: userSaved
+        };
+      });
       
-      setPosts(mockPosts);
+      setPosts(formattedPosts);
     } catch (err) {
       setError('Failed to fetch posts');
       console.error('Error fetching posts:', err);
@@ -92,14 +131,68 @@ export const useMaiSocial = (user?: User | null) => {
     setError(null);
     
     try {
-      // In a real app, this would upload media files and create a post via API
-      // For now, we'll simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       
-      // Simulate success
-      // In a real app, we would add the new post to the posts state
-      setLoading(false);
-      return { success: true, postId: 'new-post-id' };
+      // 1. Create the post
+      const post = await socialApi.createPost(
+        content,
+        user.id,
+        vertical || 'MaiHome',
+        achievement?.id
+      );
+      
+      // 2. Upload media files if any
+      if (media && media.length > 0 && post) {
+        for (const file of media) {
+          const isVideo = file.type.startsWith('video/');
+          const mediaType = isVideo ? 'video' : 'image';
+          
+          // Upload the file to Supabase Storage
+          const fileUrl = await socialApi.uploadMedia(file, mediaType === 'video' ? 'videos' : 'images');
+          
+          // For videos, we might want to generate a thumbnail
+          let thumbnailUrl;
+          if (isVideo) {
+            // In a real app, you would generate a thumbnail from the video
+            // For now, we'll use a placeholder
+            thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+          }
+          
+          // Add the media to the post
+          await socialApi.addPostMedia(post.id, mediaType, fileUrl, thumbnailUrl);
+        }
+      }
+      
+      // 3. Add tags if any
+      if (tags && tags.length > 0 && post) {
+        for (const tagName of tags) {
+          // Check if tag exists, create if not
+          let tag;
+          const { data: existingTags } = await supabase
+            .from('social_tags')
+            .select('*')
+            .eq('name', tagName)
+            .limit(1);
+          
+          if (existingTags && existingTags.length > 0) {
+            tag = existingTags[0];
+          } else {
+            tag = await socialApi.createTag(tagName);
+          }
+          
+          // Add tag to post
+          if (tag) {
+            await socialApi.addTagToPost(post.id, tag.id);
+          }
+        }
+      }
+      
+      // 4. Refresh posts to include the new one
+      await fetchPosts();
+      
+      return { success: true, postId: post?.id };
     } catch (err) {
       setError('Failed to create post');
       console.error('Error creating post:', err);
@@ -140,20 +233,36 @@ export const useMaiSocial = (user?: User | null) => {
     }
     
     setUploadProgress({
-      status: 'uploading',
-      progress: 0
+      status: 'uploading', 
+      progress: 0 
     });
     
     try {
-      // In a real app, this would be an API call to upload the video
-      // For now, we'll simulate progress updates
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setUploadProgress({
-          status: 'uploading',
-          progress: i
+      // Upload to Supabase Storage
+      const filePath = `videos/${Math.random().toString(36).substring(2, 15)}_${videoFile.name}`;
+      
+      // Create a thumbnail (in a real app, you would generate this from the video)
+      // For now, we'll use a placeholder
+      const thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+      
+      // Upload the file with progress tracking
+      const { data, error } = await supabase.storage
+        .from('social-media')
+        .upload(filePath, videoFile, {
+          cacheControl: '3600',
+          upsert: false,
+          onUploadProgress: (progress) => {
+            const percent = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress({
+              status: 'uploading',
+              progress: percent
+            });
+            if (onProgress) onProgress(percent);
+          }
         });
-        if (onProgress) onProgress(i);
+      
+      if (error) {
+        throw error;
       }
       
       // Simulate processing time
@@ -163,6 +272,11 @@ export const useMaiSocial = (user?: User | null) => {
       });
       
       await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('social-media')
+        .getPublicUrl(filePath);
       
       // Simulate completion
       setUploadProgress({
@@ -171,10 +285,10 @@ export const useMaiSocial = (user?: User | null) => {
       });
       
       // In a real app, this would return the URL of the uploaded video
-      return { 
-        success: true, 
-        videoUrl: 'https://example.com/video.mp4',
-        thumbnailUrl: 'https://example.com/thumbnail.jpg'
+      return {
+        success: true,
+        videoUrl: urlData.publicUrl,
+        thumbnailUrl: thumbnailUrl
       };
     } catch (err) {
       setUploadProgress({
@@ -189,25 +303,39 @@ export const useMaiSocial = (user?: User | null) => {
 
   // Like/unlike a post
   const likePost = async (postId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
     try {
-      // In a real app, this would be an API call
-      // For now, we'll update the state directly
-      setPosts(prevPosts => 
-        prevPosts.map(post => {
-          if (post.id === postId) {
-            const newLiked = !post.liked;
+      // Find the post to check if it's already liked
+      const post = posts.find(p => p.id === postId);
+      if (!post) return { success: false, error: 'Post not found' };
+      
+      if (post.liked) {
+        // Unlike the post
+        await socialApi.unlikePost(postId, user.id);
+      } else {
+        // Like the post
+        await socialApi.likePost(postId, user.id);
+      }
+      
+      // Update the local state
+      setPosts(prevPosts =>
+        prevPosts.map(p => {
+          if (p.id === postId) {
+            const newLiked = !p.liked;
             return {
-              ...post,
+              ...p,
               liked: newLiked,
               stats: {
-                ...post.stats,
-                likes: newLiked ? post.stats.likes + 1 : post.stats.likes - 1
+                ...p.stats,
+                likes: newLiked ? p.stats.likes + 1 : p.stats.likes - 1
               }
             };
           }
-          return post;
+          return p;
         })
       );
+      
       return { success: true };
     } catch (err) {
       console.error('Error liking post:', err);
@@ -217,20 +345,34 @@ export const useMaiSocial = (user?: User | null) => {
 
   // Save/unsave a post
   const savePost = async (postId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
     try {
-      // In a real app, this would be an API call
-      // For now, we'll update the state directly
-      setPosts(prevPosts => 
-        prevPosts.map(post => {
-          if (post.id === postId) {
+      // Find the post to check if it's already saved
+      const post = posts.find(p => p.id === postId);
+      if (!post) return { success: false, error: 'Post not found' };
+      
+      if (post.saved) {
+        // Unsave the post
+        await socialApi.unsavePost(postId, user.id);
+      } else {
+        // Save the post
+        await socialApi.savePost(postId, user.id);
+      }
+      
+      // Update the local state
+      setPosts(prevPosts =>
+        prevPosts.map(p => {
+          if (p.id === postId) {
             return {
-              ...post,
-              saved: !post.saved
+              ...p,
+              saved: !p.saved
             };
           }
-          return post;
+          return p;
         })
       );
+      
       return { success: true };
     } catch (err) {
       console.error('Error saving post:', err);
@@ -240,10 +382,14 @@ export const useMaiSocial = (user?: User | null) => {
 
   // Add a comment to a post
   const addComment = async (postId: string, content: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
     try {
-      // In a real app, this would be an API call
-      // For now, we'll update the state directly
-      setPosts(prevPosts => 
+      // Add the comment to the database
+      const comment = await socialApi.addComment(postId, user.id, content);
+      
+      // Update the local state
+      setPosts(prevPosts =>
         prevPosts.map(post => {
           if (post.id === postId) {
             return {
@@ -257,7 +403,8 @@ export const useMaiSocial = (user?: User | null) => {
           return post;
         })
       );
-      return { success: true, commentId: 'new-comment-id' };
+      
+      return { success: true, commentId: comment.id };
     } catch (err) {
       console.error('Error adding comment:', err);
       return { success: false, error: 'Failed to add comment' };
@@ -266,6 +413,8 @@ export const useMaiSocial = (user?: User | null) => {
 
   // Share a post
   const sharePost = async (postId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
     try {
       // In a real app, this would be an API call
       // For now, we'll update the state directly
@@ -293,21 +442,39 @@ export const useMaiSocial = (user?: User | null) => {
   // Fetch trending topics
   const fetchTrendingTopics = async () => {
     try {
-      // In a real app, this would be an API call
-      // For now, we'll simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Query the database for trending tags
+      const { data, error } = await supabase
+        .from('social_post_tags')
+        .select(`
+          tag:tag_id(name),
+          count:tag_id(count)
+        `)
+        .order('count', { ascending: false })
+        .limit(5);
       
-      // Simulated trending topics
-      const mockTrendingTopics = [
-        { topic: 'HealthGoals', count: 1243 },
-        { topic: 'SmartSaving', count: 856 },
-        { topic: 'SummerStyle', count: 743 },
-        { topic: 'SmartHome', count: 621 },
-        { topic: 'MindfulMonday', count: 512 }
-      ];
+      if (error) throw error;
       
-      setTrendingTopics(mockTrendingTopics);
-      return { success: true, topics: mockTrendingTopics };
+      // Format the data
+      const topics = data.map((item: any) => ({
+        topic: item.tag.name,
+        count: item.count
+      }));
+      
+      // If no data, use some defaults
+      if (topics.length === 0) {
+        const defaultTopics = [
+          { topic: 'HealthGoals', count: 1243 },
+          { topic: 'SmartSaving', count: 856 },
+          { topic: 'SummerStyle', count: 743 },
+          { topic: 'SmartHome', count: 621 },
+          { topic: 'MindfulMonday', count: 512 }
+        ];
+        setTrendingTopics(defaultTopics);
+        return { success: true, topics: defaultTopics };
+      }
+      
+      setTrendingTopics(topics);
+      return { success: true, topics };
     } catch (err) {
       console.error('Error fetching trending topics:', err);
       return { success: false, error: 'Failed to fetch trending topics' };
@@ -316,38 +483,70 @@ export const useMaiSocial = (user?: User | null) => {
 
   // Fetch suggested connections
   const fetchSuggestedConnections = async () => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
     try {
-      // In a real app, this would be an API call
-      // For now, we'll simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Query the database for users that the current user is not following
+      const { data, error } = await supabase
+        .from('auth.users')
+        .select(`
+          id,
+          name,
+          avatar_url,
+          type,
+          specialization
+        `)
+        .neq('id', user.id)
+        .not('id', 'in', (subquery) => {
+          return subquery
+            .from('social_follows')
+            .select('following_id')
+            .eq('follower_id', user.id);
+        })
+        .limit(3);
       
-      // Simulated suggested connections
-      const mockConnections = [
-        {
-          id: 'user1',
-          name: 'Lisa Rodriguez',
-          avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
-          type: 'provider',
-          specialization: 'Financial Advisor'
-        },
-        {
-          id: 'user2',
-          name: 'David Parker',
-          avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150',
-          type: 'client',
-          interests: ['Smart Home', 'Technology']
-        },
-        {
-          id: 'user3',
-          name: 'Maria Santos',
-          avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150',
-          type: 'provider',
-          specialization: 'Personal Stylist'
-        }
-      ];
+      if (error) throw error;
       
-      setSuggestedConnections(mockConnections);
-      return { success: true, connections: mockConnections };
+      // If no data, use some defaults
+      if (!data || data.length === 0) {
+        const defaultConnections = [
+          {
+            id: 'user1',
+            name: 'Lisa Rodriguez',
+            avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
+            type: 'provider',
+            specialization: 'Financial Advisor'
+          },
+          {
+            id: 'user2',
+            name: 'David Parker',
+            avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150',
+            type: 'client',
+            interests: ['Smart Home', 'Technology']
+          },
+          {
+            id: 'user3',
+            name: 'Maria Santos',
+            avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150',
+            type: 'provider',
+            specialization: 'Personal Stylist'
+          }
+        ];
+        setSuggestedConnections(defaultConnections);
+        return { success: true, connections: defaultConnections };
+      }
+      
+      // Format the data
+      const connections = data.map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar_url || 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
+        type: user.type || 'client',
+        specialization: user.specialization
+      }));
+      
+      setSuggestedConnections(connections);
+      return { success: true, connections };
     } catch (err) {
       console.error('Error fetching suggested connections:', err);
       return { success: false, error: 'Failed to fetch suggested connections' };

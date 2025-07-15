@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Image, Video, Award, Send, Hash } from 'lucide-react';
 import VideoUploader from './VideoUploader';
+import { supabase, socialApi } from '../lib/supabase';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -32,26 +33,30 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
   const handleSubmit = () => {
     if (!content.trim()) return;
     
-    onSubmit({
-      content,
-      media: media.length > 0 ? media : undefined,
-      tags,
-      vertical,
-      achievement: achievement || undefined
-    });
-    
-    // Reset form
-    setContent('');
-    setTags([]);
-    setTagInput('');
-    setVertical(user?.serviceAreas?.[0] || 'MaiHealth');
-    setMedia([]);
-    setAchievement(null);
-    setSelectedVideoFile(null);
-    setSelectedImageFile(null);
-    setImagePreview(null);
-    
-    onClose();
+    try {
+      onSubmit({
+        content,
+        media: media.length > 0 ? media : undefined,
+        tags,
+        vertical,
+        achievement: achievement || undefined
+      });
+      
+      // Reset form
+      setContent('');
+      setTags([]);
+      setTagInput('');
+      setVertical(user?.serviceAreas?.[0] || 'MaiHealth');
+      setMedia([]);
+      setAchievement(null);
+      setSelectedVideoFile(null);
+      setSelectedImageFile(null);
+      setImagePreview(null);
+      
+      onClose();
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    }
   };
 
   const handleAddTag = () => {
@@ -72,23 +77,47 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
     setTags(tags.filter(t => t !== tag));
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedImageFile(file);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImagePreview(event.target.result as string);
-          
-          // In a real app, you would upload the image to a server
-          // For now, we'll just use the preview URL
-          setMedia([{ type: 'image', url: event.target.result as string }]);
+      try {
+        // Create preview for immediate display
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setImagePreview(event.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+        
+        // Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `images/${fileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from('social-media')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) throw error;
+        
+        // Get the public URL
+        const { data: urlData } = supabase.storage
+          .from('social-media')
+          .getPublicUrl(filePath);
+        
+        // Update media state with the actual URL
+        if (urlData) {
+          setMedia([{ type: 'image', url: urlData.publicUrl }]);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
     }
   };
 
@@ -100,17 +129,50 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
     setMedia([{ type: 'video', url: videoUrl, thumbnail: thumbnailUrl }]);
   };
 
-  const handleAchievementSelect = (achievementType: string) => {
+  const handleAchievementSelect = async (achievementType: string) => {
     // In a real app, this would fetch achievement data from the user's profile
-    // For now, we'll use mock data
-    const mockAchievements = {
-      'health': { title: 'Health Milestone', description: '+15 Health Score', icon: 'heart' },
-      'money': { title: 'Savings Goal Reached', description: '£10,000 Emergency Fund', icon: 'trending-up' },
-      'style': { title: 'Style Transformation', description: '92% Style Score', icon: 'sparkles' },
-      'home': { title: 'Energy Efficiency', description: '22% Reduction', icon: 'zap' }
-    };
-    
-    setAchievement(mockAchievements[achievementType as keyof typeof mockAchievements]);
+    try {
+      if (!user) return;
+      
+      // Check if the achievement already exists in the database
+      const { data, error } = await supabase
+        .from('social_achievements')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('vertical', `Mai${achievementType.charAt(0).toUpperCase() + achievementType.slice(1)}`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        // Use existing achievement
+        setAchievement(data[0]);
+      } else {
+        // Create a new achievement
+        const mockAchievements = {
+          'health': { title: 'Health Milestone', description: '+15 Health Score', icon: 'heart' },
+          'money': { title: 'Savings Goal Reached', description: '£10,000 Emergency Fund', icon: 'trending-up' },
+          'style': { title: 'Style Transformation', description: '92% Style Score', icon: 'sparkles' },
+          'home': { title: 'Energy Efficiency', description: '22% Reduction', icon: 'zap' }
+        };
+        
+        const achievementData = mockAchievements[achievementType as keyof typeof mockAchievements];
+        const vertical = `Mai${achievementType.charAt(0).toUpperCase() + achievementType.slice(1)}` as 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome';
+        
+        const newAchievement = await socialApi.createAchievement(
+          user.id,
+          achievementData.title,
+          achievementData.description,
+          achievementData.icon,
+          vertical
+        );
+        
+        setAchievement(newAchievement);
+      }
+    } catch (error) {
+      console.error('Error handling achievement selection:', error);
+    }
   };
 
   return (
