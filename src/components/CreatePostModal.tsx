@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Image, Video, Award, Send, Hash } from 'lucide-react';
 import VideoUploader from './VideoUploader';
 import { supabase, socialApi } from '../lib/supabase';
+import { supabase, socialApi } from '../lib/supabase';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -118,6 +119,34 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
       } catch (error) {
         console.error('Error uploading image:', error);
       }
+        reader.readAsDataURL(file);
+        
+        // Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `images/${fileName}`;
+        
+        const { data, error } = await supabase.storage
+          .from('social-media')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) throw error;
+        
+        // Get the public URL
+        const { data: urlData } = supabase.storage
+          .from('social-media')
+          .getPublicUrl(filePath);
+        
+        // Update media state with the actual URL
+        if (urlData) {
+          setMedia([{ type: 'image', url: urlData.publicUrl }]);
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
     }
   };
 
@@ -139,6 +168,40 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onSu
         .from('social_achievements')
         .select('*')
         .eq('user_id', user.id)
+        .eq('vertical', `Mai${achievementType.charAt(0).toUpperCase() + achievementType.slice(1)}`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        // Use existing achievement
+        setAchievement(data[0]);
+      } else {
+        // Create a new achievement
+        const mockAchievements = {
+          'health': { title: 'Health Milestone', description: '+15 Health Score', icon: 'heart' },
+          'money': { title: 'Savings Goal Reached', description: '£10,000 Emergency Fund', icon: 'trending-up' },
+          'style': { title: 'Style Transformation', description: '92% Style Score', icon: 'sparkles' },
+          'home': { title: 'Energy Efficiency', description: '22% Reduction', icon: 'zap' }
+        };
+        
+        const achievementData = mockAchievements[achievementType as keyof typeof mockAchievements];
+        const vertical = `Mai${achievementType.charAt(0).toUpperCase() + achievementType.slice(1)}` as 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome';
+        
+        const newAchievement = await socialApi.createAchievement(
+          user.id,
+          achievementData.title,
+          achievementData.description,
+          achievementData.icon,
+          vertical
+        );
+        
+        setAchievement(newAchievement);
+      }
+    } catch (error) {
+      console.error('Error handling achievement selection:', error);
+    }
         .eq('vertical', `Mai${achievementType.charAt(0).toUpperCase() + achievementType.slice(1)}`)
         .order('created_at', { ascending: false })
         .limit(1);

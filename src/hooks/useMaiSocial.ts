@@ -488,7 +488,7 @@ export const useMaiSocial = (user?: User | null) => {
     try {
       // Query the database for users that the current user is not following
       const { data, error } = await supabase
-        .from('auth.users')
+        .from('profiles')
         .select(`
           id,
           name,
