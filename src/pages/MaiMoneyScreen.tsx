@@ -3,12 +3,14 @@ import VoiceAgent from "../components/VoiceAgent";
 import SeasonalNotifications from "../components/SeasonalNotifications";
 import { CreditCard, PiggyBank, Shield, TrendingUp, DollarSign, FileText, Calculator, Target, Building, Briefcase, Users, FileUp } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useProfile } from "../hooks/useProfile";
 import { useMaiMoneyRecommendations } from "../hooks/useMaiMoneyRecommendations";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useSeasonalRecommendations } from "../hooks/useSeasonalRecommendations";
 
 export default function MaiMoneyScreen() {
   const { user } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const { location } = useGeolocation();
   const { getCurrentSeason } = useSeasonalRecommendations();
   const currentSeason = getCurrentSeason();
@@ -18,6 +20,10 @@ export default function MaiMoneyScreen() {
     location,
     currentSeason
   );
+
+  // Role-aware content
+  const isProvider = profile?.type === 'provider';
+  const isClient = profile?.type === 'client';
 
   const renderRecommendationCard = (item: any, colorClass: string) => (
     <div key={item.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:shadow-md transition-shadow duration-200">
@@ -131,17 +137,23 @@ export default function MaiMoneyScreen() {
         <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
           Your MaiMoney Dashboard
         </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Manage your banking, personal finance, and insurance with AI-powered insights and voice assistance.
-        </p>
+        {isProvider ? (
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Manage client financial portfolios, provide investment advice, and track your advisory practice performance.
+          </p>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Manage your banking, personal finance, and insurance with AI-powered insights and voice assistance.
+          </p>
+        )}
         
         {/* Context Information */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           {user?.profileData?.financeData && (
             <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-sm text-green-800 dark:text-green-200">
-                <strong>Risk Profile:</strong> {user.profileData.financeData.riskTolerance || 'Not specified'} • 
-                Income: £{user.profileData.financeData.monthlyIncome || 'Not specified'}/month
+                <strong>{isProvider ? 'Specialization:' : 'Risk Profile:'}</strong> {isProvider ? (profile?.specialization || 'Financial Planning') : (user.profileData.financeData.riskTolerance || 'Not specified')} • 
+                {isProvider ? 'Managing client portfolios' : `Income: £${user.profileData.financeData.monthlyIncome || 'Not specified'}/month`}
               </p>
             </div>
           )}
@@ -156,7 +168,7 @@ export default function MaiMoneyScreen() {
           
           <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
             <p className="text-sm text-purple-800 dark:text-purple-200">
-              <strong>Goals:</strong> {user?.profileData?.financeData?.financialGoals?.slice(0, 2).join(', ') || 'Building wealth'}
+              <strong>{isProvider ? 'Clients:' : 'Goals:'}</strong> {isProvider ? '42 active portfolios' : (user?.profileData?.financeData?.financialGoals?.slice(0, 2).join(', ') || 'Building wealth')}
             </p>
           </div>
         </div>
