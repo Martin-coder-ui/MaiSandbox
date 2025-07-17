@@ -3,11 +3,17 @@ import VoiceAgent from "../components/VoiceAgent";
 import SeasonalNotifications from "../components/SeasonalNotifications";
 import { Home, Lightbulb, Shield, Thermometer, Camera, Wrench, Calendar, Settings, Zap, Lock, Wifi, Speaker } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useProfile } from "../hooks/useProfile";
 import { useGeolocation } from "../hooks/useGeolocation";
 
 export default function MaiHomeScreen() {
   const { user } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const { location } = useGeolocation();
+
+  // Role-aware content
+  const isProvider = profile?.type === 'provider';
+  const isClient = profile?.type === 'client';
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -18,17 +24,23 @@ export default function MaiHomeScreen() {
             MaiHome
           </h1>
         </div>
-        <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
-          Simplify everyday living with smart automation and home-focused planning.
-        </p>
+        {isProvider ? (
+          <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
+            Manage your smart home installation projects and client automation systems.
+          </p>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
+            Simplify everyday living with smart automation and home-focused planning.
+          </p>
+        )}
         
         {/* Context Information */}
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           {user && (
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Welcome:</strong> {user.name} • 
-                {user.serviceAreas.includes('MaiHome') ? 'MaiHome Active' : 'Getting Started'}
+                <strong>Welcome:</strong> {user.name} {isProvider && '(Provider)'} • 
+                {isProvider ? 'Managing Client Projects' : user.serviceAreas?.includes('MaiHome') ? 'MaiHome Active' : 'Getting Started'}
               </p>
             </div>
           )}
@@ -43,11 +55,32 @@ export default function MaiHomeScreen() {
           
           <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
             <p className="text-sm text-purple-800 dark:text-purple-200">
-              <strong>Status:</strong> Smart home ready for setup
+              <strong>Status:</strong> {isProvider ? 'Active installations: 3' : 'Smart home ready for setup'}
             </p>
           </div>
         </div>
       </div>
+
+      {/* Provider-specific dashboard */}
+      {isProvider && (
+        <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Provider Dashboard</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">12</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Active Projects</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">£45k</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Monthly Revenue</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">98%</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Client Satisfaction</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         {/* Voice Agent - Featured prominently */}
@@ -62,8 +95,12 @@ export default function MaiHomeScreen() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Connected Devices</h3>
               <Wifi className="w-6 h-6 text-blue-500" />
             </div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">12</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Smart devices online</p>
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              {isProvider ? '156' : '12'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Client devices managed' : 'Smart devices online'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
@@ -71,26 +108,42 @@ export default function MaiHomeScreen() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Energy Savings</h3>
               <Zap className="w-6 h-6 text-green-500" />
             </div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">£127</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Saved this month</p>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+              {isProvider ? '£12.5k' : '£127'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Client savings generated' : 'Saved this month'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Security Status</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Installations' : 'Security Status'}
+              </h3>
               <Shield className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">All Clear</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Home secured</p>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+              {isProvider ? '8' : 'All Clear'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'This month' : 'Home secured'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Projects</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Client Projects' : 'Active Projects'}
+              </h3>
               <Wrench className="w-6 h-6 text-orange-500" />
             </div>
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">3</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">In progress</p>
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              {isProvider ? '24' : '3'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Active client projects' : 'In progress'}
+            </p>
           </div>
         </div>
       </div>

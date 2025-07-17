@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useProfile } from "../hooks/useProfile";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { 
   MessageSquare, 
@@ -27,6 +28,7 @@ import {
 
 export default function MaiSocialScreen() {
   const { user } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const { location } = useGeolocation();
   const [activeTab, setActiveTab] = useState<'feed' | 'discover' | 'saved'>('feed');
   const [activeFilter, setActiveFilter] = useState<'all' | 'health' | 'money' | 'style' | 'home'>('all');
@@ -321,15 +323,25 @@ export default function MaiSocialScreen() {
         return true;
       });
 
+  // Role-aware content
+  const isProvider = profile?.type === 'provider';
+  const isClient = profile?.type === 'client';
+
   return (
     <div className="p-8 max-w-6xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold mb-4 text-gray-900 dark:text-white">
           MaiSocial
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 text-lg">
-          Connect with the Mai community, share your achievements, and learn from others.
-        </p>
+        {isProvider ? (
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Connect with clients and fellow providers, share expertise, and grow your practice.
+          </p>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Connect with the Mai community, share your achievements, and learn from others.
+          </p>
+        )}
         
         {/* Context Information */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -337,7 +349,7 @@ export default function MaiSocialScreen() {
             <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 shadow-sm">
               <p className="text-sm text-primary-800 dark:text-primary-200 flex items-center">
                 <Users className="w-4 h-4 mr-1.5 text-primary-500" />
-                <strong className="font-semibold">Welcome:</strong> {user.name}
+                <strong className="font-semibold">Welcome:</strong> {user.name} {isProvider && '(Provider)'}
               </p>
             </div>
           )}
@@ -415,7 +427,9 @@ export default function MaiSocialScreen() {
 
           {/* Create Post Card */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Share Something</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {isProvider ? 'Share Expertise' : 'Share Something'}
+            </h3>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 rounded-full overflow-hidden">
                 <img 
@@ -429,7 +443,7 @@ export default function MaiSocialScreen() {
               <div className="flex-1">
                 <input 
                   type="text" 
-                  placeholder="What's on your mind?" 
+                  placeholder={isProvider ? "Share tips, insights, or client success stories..." : "What's on your mind?"} 
                   className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -443,10 +457,12 @@ export default function MaiSocialScreen() {
                 <Video className="w-5 h-5 text-secondary-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">Video</span>
               </button>
-              <button className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
-                <Award className="w-5 h-5 text-accent-500" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Achievement</span>
-              </button>
+              {isClient && (
+                <button className="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+                  <Award className="w-5 h-5 text-accent-500" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Achievement</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -493,7 +509,9 @@ export default function MaiSocialScreen() {
           {/* Suggested Connections */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Suggested Connections</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Connect with Clients' : 'Suggested Connections'}
+              </h3>
               <Users className="w-5 h-5 text-primary-500" />
             </div>
             <div className="space-y-4">
@@ -507,8 +525,12 @@ export default function MaiSocialScreen() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Lisa Rodriguez</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Financial Advisor</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {isProvider ? 'Emma Thompson' : 'Lisa Rodriguez'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isProvider ? 'Potential Client - MaiHealth' : 'Financial Advisor'}
+                    </p>
                   </div>
                 </div>
                 <button className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors duration-200">
@@ -525,8 +547,12 @@ export default function MaiSocialScreen() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">David Parker</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Smart Home Enthusiast</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {isProvider ? 'James Wilson' : 'David Parker'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isProvider ? 'Potential Client - MaiMoney' : 'Smart Home Enthusiast'}
+                    </p>
                   </div>
                 </div>
                 <button className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors duration-200">
@@ -543,8 +569,12 @@ export default function MaiSocialScreen() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Maria Santos</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Personal Stylist</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {isProvider ? 'Sophie Chen' : 'Maria Santos'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isProvider ? 'Potential Client - MaiStyle' : 'Personal Stylist'}
+                    </p>
                   </div>
                 </div>
                 <button className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors duration-200">
@@ -553,7 +583,7 @@ export default function MaiSocialScreen() {
               </div>
             </div>
             <button className="w-full mt-4 text-sm text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300">
-              View More
+              {isProvider ? 'View All Potential Clients' : 'View More'}
             </button>
           </div>
         </div>
