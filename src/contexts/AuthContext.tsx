@@ -1,4 +1,3 @@
-```typescript
 import { supabase } from "../lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -79,153 +78,9 @@ interface AuthContextType {
   logout: () => void;
   signUp: (email: string, password: string, name: string) => Promise<boolean>;
   isAuthenticated: boolean;
-  switchUser: (userId: string) => void; // Keep for test users if needed
-  getTestUsers: () => UserProfile[]; // Keep for test users if needed
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Test users for development (can be removed once Supabase is fully populated)
-const TEST_USERS: UserProfile[] = [
-  {
-    id: 'client1',
-    email: 'emma.health@test.com',
-    name: 'Emma Thompson',
-    avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'user',
-    serviceAreas: ['MaiHealth'],
-    profileData: {
-      age: 63,
-      gender: 'female',
-      location: 'London, UK',
-      socialEngagement: 'isolated',
-      healthData: {
-        medicalConditions: ['high blood pressure', 'arthritis'],
-        familyMedicalHistory: ['diabetes', 'heart disease'],
-        sleepPatterns: 'poor',
-        stressLevels: 'moderate',
-        exerciseFrequency: 'rarely',
-        alcoholConsumption: 'light',
-        smokingHabits: 'none',
-        currentSymptoms: ['joint pain', 'fatigue'],
-        vaccinationStatus: ['Annual flu vaccine']
-      }
-    }
-  },
-  {
-    id: 'client2',
-    email: 'james.finance@test.com',
-    name: 'James Wilson',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'user',
-    serviceAreas: ['MaiMoney'],
-    profileData: {
-      age: 35,
-      gender: 'male',
-      location: 'Manchester, UK',
-      socialEngagement: 'moderate',
-      financeData: {
-        monthlyIncome: 3500,
-        currentSavings: 8000,
-        debt: 2500,
-        riskTolerance: 'medium',
-        financialGoals: ['emergency-fund', 'house-deposit', 'investment-portfolio'],
-        spendingCategories: ['Groceries', 'Transport', 'Entertainment'],
-        existingBankAccounts: ['Current Account', 'Savings Account'],
-        existingInsurancePolicies: 'life, home'
-      },
-      cvData: {
-        fileName: 'james_wilson_cv.pdf',
-        fileSize: 1024 * 500,
-        fileType: 'application/pdf',
-        uploadDate: new Date().toISOString(),
-        extractedData: {
-          currentPosition: 'Software Engineer',
-          employer: 'Tech Solutions Ltd',
-          yearsExperience: 7,
-          skills: ['JavaScript', 'React', 'Node.js', 'SQL', 'Cloud Computing'],
-          education: ['BSc Computer Science'],
-          employmentHistory: [],
-          certifications: ['AWS Certified Developer'],
-          currentSalary: 55000,
-          careerLevel: 'mid'
-        }
-      }
-    }
-  },
-  {
-    id: 'client3',
-    email: 'sophie.style@test.com',
-    name: 'Sophie Chen',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'user',
-    serviceAreas: ['MaiStyle'],
-    profileData: {
-      age: 28,
-      gender: 'female',
-      location: 'Birmingham, UK',
-      socialEngagement: 'connected',
-      styleData: {
-        stylePreference: 'minimalist',
-        colorPalette: 'cool-tones',
-        bodyType: 'hourglass',
-        hairType: 'fine-straight',
-        skinTone: 'cool-undertones',
-        budget: '500-1000',
-        lifestyle: 'professional-casual'
-      },
-      preferredSuppliers: ['COS', 'Arket', 'Uniqlo']
-    }
-  },
-  {
-    id: 'client4',
-    email: 'david.home@test.com',
-    name: 'David Parker',
-    avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'user',
-    serviceAreas: ['MaiHome'],
-    profileData: {
-      age: 45,
-      gender: 'male',
-      location: 'Edinburgh, UK',
-      socialEngagement: 'moderate',
-      financeData: {
-        monthlyIncome: 4000,
-        currentSavings: 15000,
-        debt: 0,
-        riskTolerance: 'low',
-        financialGoals: ['home-improvement', 'energy-efficiency'],
-        spendingCategories: ['Utilities', 'Home Maintenance'],
-        existingBankAccounts: ['Current Account'],
-        existingInsurancePolicies: 'home'
-      }
-    }
-  },
-  {
-    id: 'provider1',
-    email: 'dr.sarah@test.com',
-    name: 'Dr. Sarah Johnson',
-    avatar: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'provider',
-    serviceAreas: ['MaiHealth'],
-    specialization: 'physiotherapy',
-    providerData: {
-      yearsExperience: 8
-    }
-  },
-  {
-    id: 'provider2',
-    email: 'advisor.lisa@test.com',
-    name: 'Lisa Rodriguez',
-    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
-    role: 'provider',
-    serviceAreas: ['MaiMoney'],
-    specialization: 'financial-planning',
-    providerData: {
-      yearsExperience: 10
-    }
-  }
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -364,29 +219,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
-  // This function is primarily for development/testing with mock users
-  const switchUser = (userId: string) => {
-    const foundUser = TEST_USERS.find(u => u.id === userId);
-    if (foundUser) {
-      setUser(foundUser);
-      setIsAuthenticated(true);
-      // In a real scenario, you might also want to sign them in via Supabase
-      // or clear any existing Supabase session. For mock users, this is fine.
-    }
-  };
-
-  // This function is primarily for development/testing with mock users
-  const getTestUsers = () => TEST_USERS;
-
   return (
     <AuthContext.Provider value={{
       user,
       login,
       logout,
       signUp,
-      isAuthenticated,
-      switchUser,
-      getTestUsers
+      isAuthenticated
     }}>
       {children}
     </AuthContext.Provider>
@@ -400,4 +239,3 @@ export const useAuth = () => {
   }
   return context;
 };
-```
