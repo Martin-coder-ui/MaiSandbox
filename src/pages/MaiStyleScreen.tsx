@@ -156,39 +156,59 @@ export default function MaiStyleScreen() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Style Score</h3>
               <Star className="w-6 h-6 text-yellow-500" />
             </div>
-            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">92%</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Excellent style match</p>
+            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
+              {isProvider ? '96%' : '92%'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Client satisfaction rate' : 'Excellent style match'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recommendations</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Client Plans' : 'Recommendations'}
+              </h3>
               <Sparkles className="w-6 h-6 text-purple-500" />
             </div>
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-              {styleRecommendations.clothing.length + styleRecommendations.hair.length + 
-               styleRecommendations.makeup.length + styleRecommendations.jewelry.length + 
-               styleRecommendations.nails.length}
+              {isProvider ? '84' : (styleRecommendations.clothing.length + styleRecommendations.hair.length + 
+                                   styleRecommendations.makeup.length + styleRecommendations.jewelry.length + 
+                                   styleRecommendations.nails.length)}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Personalized for you</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Active styling plans' : 'Personalized for you'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Wardrobe Items</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Client Sessions' : 'Wardrobe Items'}
+              </h3>
               <ShoppingBag className="w-6 h-6 text-blue-500" />
             </div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">127</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Catalogued pieces</p>
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              {isProvider ? '156' : '127'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'This month' : 'Catalogued pieces'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Trend Match</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Revenue' : 'Trend Match'}
+              </h3>
               <TrendingUp className="w-6 h-6 text-green-500" />
             </div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">88%</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Current trends</p>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+              {isProvider ? '£8.4k' : '88%'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Monthly earnings' : 'Current trends'}
+            </p>
           </div>
         </div>
       </div>

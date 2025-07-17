@@ -209,43 +209,59 @@ export default function MaiMoneyScreen() {
               <DollarSign className="w-6 h-6 text-green-500" />
             </div>
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-              £{user?.profileData?.financeData?.currentSavings?.toLocaleString() || '12,450'}
+              {isProvider ? '£2.4M' : `£${user?.profileData?.financeData?.currentSavings?.toLocaleString() || '12,450'}`}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">+5.2% this month</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Assets under management' : '+5.2% this month'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Monthly Spending</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Monthly Revenue' : 'Monthly Spending'}
+              </h3>
               <CreditCard className="w-6 h-6 text-blue-500" />
             </div>
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-              £{user?.profileData?.financeData?.monthlyExpenses?.toLocaleString() || '2,340'}
+              {isProvider ? '£18,500' : `£${user?.profileData?.financeData?.monthlyExpenses?.toLocaleString() || '2,340'}`}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Within budget</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Advisory fees earned' : 'Within budget'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recommendations</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Client Plans' : 'Recommendations'}
+              </h3>
               <Target className="w-6 h-6 text-purple-500" />
             </div>
             <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-              {moneyRecommendations.banking.length + 
-               moneyRecommendations.personalFinance.length + 
-               moneyRecommendations.insurance.length + 
-               moneyRecommendations.career.length}
+              {isProvider ? '127' : (moneyRecommendations.banking.length + 
+                                    moneyRecommendations.personalFinance.length + 
+                                    moneyRecommendations.insurance.length + 
+                                    moneyRecommendations.career.length)}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Personalized for you</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Active financial plans' : 'Personalized for you'}
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Investment Growth</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {isProvider ? 'Client Returns' : 'Investment Growth'}
+              </h3>
               <TrendingUp className="w-6 h-6 text-teal-500" />
             </div>
-            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-2">+12.5%</div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">This year</p>
+            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-2">
+              {isProvider ? '+8.2%' : '+12.5%'}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Average portfolio performance' : 'This year'}
+            </p>
           </div>
         </div>
       </div>

@@ -219,12 +219,18 @@ export default function MaiHealthScreen() {
                   <circle className="text-green-500 dark:text-green-400 progress-ring" strokeWidth="10" strokeDasharray="251.2" strokeDashoffset="37.68" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
                 </svg>
                 <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900 dark:text-white">85%</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {isProvider ? '94%' : '85%'}
+                  </span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Great progress this week!</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">+5% from last month</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                  {isProvider ? 'Patient satisfaction rate' : 'Great progress this week!'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {isProvider ? 'Above industry average' : '+5% from last month'}
+                </p>
               </div>
             </div>
           </div>
@@ -233,20 +239,22 @@ export default function MaiHealthScreen() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                 <TrendingUp className="w-5 h-5 text-primary-500 mr-2" />
-                Recommendations
+                {isProvider ? 'AI Insights' : 'Recommendations'}
               </h3>
               <span className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 rounded-full">
-                Personalized
+                {isProvider ? 'Clinical' : 'Personalized'}
               </span>
             </div>
             <div className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
-              {healthRecommendations.preventiveCare.length + 
-               healthRecommendations.lifestyle.length + 
-               healthRecommendations.conditionManagement.length + 
-               healthRecommendations.mentalWellbeing.length + 
-               healthRecommendations.seasonalHealth.length}
+              {isProvider ? '15' : (healthRecommendations.preventiveCare.length + 
+                                   healthRecommendations.lifestyle.length + 
+                                   healthRecommendations.conditionManagement.length + 
+                                   healthRecommendations.mentalWellbeing.length + 
+                                   healthRecommendations.seasonalHealth.length)}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Personalized for you</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {isProvider ? 'Pending review' : 'Personalized for you'}
+            </p>
           </div>
 
           <div className="card p-6 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300">
@@ -259,9 +267,11 @@ export default function MaiHealthScreen() {
                 Upcoming
               </span>
             </div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">3</div>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+              {isProvider ? '24' : '3'}
+            </div>
             <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-              <p>Upcoming this month</p>
+              <p>{isProvider ? 'This week' : 'Upcoming this month'}</p>
               <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline flex items-center">
                 View all
                 <ChevronRight className="w-4 h-4 ml-1" />
@@ -273,17 +283,19 @@ export default function MaiHealthScreen() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                 <Users className="w-5 h-5 text-teal-500 mr-2" />
-                Care Team
+                {isProvider ? 'Patient Load' : 'Care Team'}
               </h3>
               <span className="text-xs px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 rounded-full">
                 Active
               </span>
             </div>
-            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-2">5</div>
+            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-2">
+              {isProvider ? '127' : '5'}
+            </div>
             <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
-              <p>Active providers</p>
+              <p>{isProvider ? 'Active patients' : 'Active providers'}</p>
               <a href="#" className="text-primary-600 dark:text-primary-400 hover:underline flex items-center">
-                View team
+                {isProvider ? 'Manage patients' : 'View team'}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </a>
             </div>
