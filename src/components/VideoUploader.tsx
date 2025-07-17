@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Video, X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { supabase } from '../lib/supabase';
 
 interface VideoUploaderProps {
   onVideoSelect: (file: File | null) => void;
