@@ -536,18 +536,21 @@ export const useMaiStyleRecommendations = (
 
         // --- Hair Recommendations Based on Hair Type and Face Shape ---
         if (hairType === 'fine-straight') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isLowMaintenance = lifestyle === 'active' || lifestyle === 'casual';
+          
           newRecommendations.hair.push(
             {
               id: 'h_fine1',
-              name: 'Layered Bob with Bangs',
-              description: 'Adds volume and movement to fine, straight hair.',
+              name: isLowMaintenance ? 'Low-Maintenance Layered Bob' : 'Layered Bob with Bangs',
+              description: isLowMaintenance ? 'Easy-care cut that adds volume with minimal styling required.' : 'Adds volume and movement to fine, straight hair.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: currentSeason === 'winter' ? 'Essential warmth for winter while maintaining your minimalist aesthetic.' : 'High-quality basics are the foundation of minimalist style.',
-              matchScore: currentSeason === 'winter' ? 96 : 88,
-              difficulty: 'medium',
-              timeRequired: '20 minutes',
+              reason: isLowMaintenance ? 'Perfect for your active lifestyle while maximizing your hair\'s natural volume.' : 'Creates the illusion of fullness and frames the face beautifully.',
+              matchScore: isLowMaintenance ? 95 : 88,
+              difficulty: isLowMaintenance ? 'easy' : 'medium',
+              timeRequired: isLowMaintenance ? '10 minutes' : '20 minutes',
               supplier: location ? `Hair salons in ${location.city}` : 'Local Hair Salon',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : currentSeason === 'winter' ? 'Great for winter - adds warmth around face' : undefined
             },
             {
               id: 'h_fine2',
@@ -562,18 +565,21 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (hairType === 'thick-curly' || hairType === 'thick-wavy') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isHighMaintenance = budget === 'over-2000';
+          
           newRecommendations.hair.push(
             {
               id: 'h_thick1',
-              name: 'Long Layered Curls',
-              description: 'Enhances natural curl pattern with strategic layers.',
+              name: isHighMaintenance ? 'Professional Curl Enhancement Treatment' : 'Long Layered Curls',
+              description: isHighMaintenance ? 'Salon treatment to enhance and define your natural curl pattern with professional products.' : 'Enhances natural curl pattern with strategic layers.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Works with your natural texture to create beautiful, defined curls.',
-              matchScore: 94,
-              difficulty: 'medium',
-              timeRequired: '25 minutes',
+              reason: isHighMaintenance ? 'Professional treatment will maximize your curl potential with salon-quality results.' : 'Works with your natural texture to create beautiful, defined curls.',
+              matchScore: isHighMaintenance ? 97 : 91,
+              difficulty: isHighMaintenance ? 'easy' : 'medium',
+              timeRequired: isHighMaintenance ? '15 minutes with treatment' : '25 minutes',
               supplier: location ? `Curl specialists in ${location.city}` : 'Curl Specialist Salon',
-              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : currentSeason === 'summer' ? 'Embrace natural texture in humid weather' : undefined
             }
           );
         } else {
@@ -582,18 +588,21 @@ export const useMaiStyleRecommendations = (
 
         // --- Makeup Recommendations Based on Skin Tone and Lifestyle ---
         if (skinTone === 'cool-undertones') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
+          
           newRecommendations.makeup.push(
             {
               id: 'm_cool1',
-              name: 'Berry Lip and Rosy Cheeks',
-              description: 'Cool-toned colors that complement your complexion.',
+              name: isProfessional ? 'Professional Cool-Toned Look' : 'Berry Lip and Rosy Cheeks',
+              description: isProfessional ? 'Sophisticated cool tones perfect for professional settings.' : 'Cool-toned colors that complement your complexion.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Enhances the natural coolness of your complexion.',
-              matchScore: 87,
-              occasion: 'everyday',
-              products: ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
+              reason: isProfessional ? 'Cool tones enhance your complexion while maintaining professional appropriateness.' : 'Enhances the natural coolness of your complexion.',
+              matchScore: isProfessional ? 92 : 84,
+              occasion: isProfessional ? 'work' : 'everyday',
+              products: isProfessional ? ['Neutral berry lip', 'Subtle pink blush', 'Taupe eyeshadow'] : ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
               supplier: 'Charlotte Tilbury',
-              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : currentSeason === 'spring' ? 'Fresh spring colors' : undefined
             },
             {
               id: 'm_cool2',
@@ -608,18 +617,21 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (skinTone === 'warm-undertones') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isActive = lifestyle === 'active';
+          
           newRecommendations.makeup.push(
             {
               id: 'm_warm1',
-              name: 'Golden Glow Look',
-              description: 'Warm, bronzed look that enhances your natural radiance.',
+              name: isActive ? 'Natural Warm Glow' : 'Golden Glow Look',
+              description: isActive ? 'Long-wearing warm tones perfect for active lifestyles.' : 'Warm, bronzed look that enhances your natural radiance.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Warm tones complement your undertones perfectly.',
-              matchScore: 90,
+              reason: isActive ? 'Sweat-resistant warm tones that complement your active lifestyle.' : 'Warm tones complement your undertones perfectly.',
+              matchScore: isActive ? 93 : 87,
               occasion: 'everyday',
-              products: ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
+              products: isActive ? ['Waterproof bronze eyeshadow', 'Cream peach blush', 'Tinted lip balm'] : ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
               supplier: 'Fenty Beauty',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : currentSeason === 'autumn' ? 'Warm autumn radiance' : undefined
             }
           );
         } else {
@@ -702,7 +714,7 @@ export const useMaiStyleRecommendations = (
               length: 'medium',
               finish: 'glossy',
               maintenance: 'high',
-              supplier: location ? `Nail art specialists in ${location.city}` : 'Nail Art Specialist'
+              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon'
             }
           );
         } else if (stylePreference === 'romantic') {
@@ -717,8 +729,7 @@ export const useMaiStyleRecommendations = (
               length: 'medium',
               finish: 'glossy',
               maintenance: 'medium',
-              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon',
-              seasonalNote: currentSeason === 'spring' ? 'Perfect for spring romance' : undefined
+              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon'
             }
           );
         } else if (lifestyle === 'professional-casual') {
@@ -726,14 +737,14 @@ export const useMaiStyleRecommendations = (
             {
               id: 'n_prof1',
               name: 'Neutral Gel Manicure',
-              description: 'Professional and polished with long-lasting wear.',
+              description: 'Long-lasting and professional appearance.',
               imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
               reason: 'Perfect for professional settings while maintaining style.',
-              matchScore: 92,
+              matchScore: 89,
               length: 'short',
               finish: 'glossy',
               maintenance: 'low',
-              supplier: location ? `Professional nail salons in ${location.city}` : 'Professional Nail Salon'
+              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon'
             }
           );
         } else {
