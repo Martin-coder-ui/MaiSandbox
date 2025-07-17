@@ -62,6 +62,7 @@ export const useMaiSocial = (user?: User | null) => {
     status: 'idle',
     progress: 0
   });
+  const [realTimeSubscriptions, setRealTimeSubscriptions] = useState<any[]>([]);
 
   // Fetch posts
   const fetchPosts = async (filter?: string) => {
@@ -80,11 +81,11 @@ export const useMaiSocial = (user?: User | null) => {
           thumbnail: m.thumbnail_url
         })) : undefined;
         
-        // Check if the current user has liked this post
-        const userLiked = post.likes?.some((like: any) => like.user_id === user.id) || false;
+        // Get like status from separate query for better performance
+        const userLiked = false; // Will be updated by separate query
         
-        // Check if the current user has saved this post
-        const userSaved = post.saved?.some((save: any) => save.user_id === user.id) || false;
+        // Get save status from separate query for better performance
+        const userSaved = false; // Will be updated by separate query
         
         // Extract tags
         const tags = post.tags ? post.tags.map((t: any) => t.tag.name) : [];
@@ -99,8 +100,8 @@ export const useMaiSocial = (user?: User | null) => {
           content: post.content,
           media,
           stats: {
-            likes: post.likes?.length || 0,
-            comments: post.comments?.length || 0,
+            likes: post.likes_count?.[0]?.count || 0,
+            comments: post.comments_count?.[0]?.count || 0,
             shares: 0 // We don't track shares in the database yet
           },
           timestamp: post.created_at,
@@ -117,11 +118,51 @@ export const useMaiSocial = (user?: User | null) => {
       });
       
       setPosts(formattedPosts);
+      
+      // Update like and save status for current user
+      if (user) {
+        await updateUserInteractionStatus(formattedPosts.map(p => p.id));
+      }
     } catch (err) {
       setError('Failed to fetch posts');
       console.error('Error fetching posts:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Update user interaction status (likes, saves) for posts
+  const updateUserInteractionStatus = async (postIds: string[]) => {
+    if (!user || postIds.length === 0) return;
+    
+    try {
+      // Get user's likes for these posts
+      const { data: likes } = await supabase
+        .from('social_likes')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds);
+      
+      // Get user's saves for these posts
+      const { data: saves } = await supabase
+        .from('social_saves')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds);
+      
+      const likedPostIds = new Set(likes?.map(l => l.post_id) || []);
+      const savedPostIds = new Set(saves?.map(s => s.post_id) || []);
+      
+      // Update posts with user interaction status
+      setPosts(prevPosts =>
+        prevPosts.map(post => ({
+          ...post,
+          liked: likedPostIds.has(post.id),
+          saved: savedPostIds.has(post.id)
+        }))
+      );
+    } catch (err) {
+      console.error('Error updating user interaction status:', err);
     }
   };
 
@@ -145,7 +186,7 @@ export const useMaiSocial = (user?: User | null) => {
           
           try {
             // Upload the file to Supabase Storage
-            const fileUrl = await socialApi.uploadMedia(file, mediaType === 'video' ? 'videos' : 'images');
+            const fileUrl = await socialApi.uploadMedia(file, `${mediaType}s`);
             
             // For videos, we might want to generate a thumbnail
             let thumbnailUrl;
@@ -178,7 +219,12 @@ export const useMaiSocial = (user?: User | null) => {
       // 3. Add media to the post if any were uploaded
       if (mediaUrls.length > 0 && post) {
         for (const mediaItem of mediaUrls) {
-          await socialApi.addPostMedia(post.id, mediaItem.type as 'image' | 'video', mediaItem.url, mediaItem.thumbnail);
+          await socialApi.addPostMedia(
+            post.id, 
+            mediaItem.type as 'image' | 'video', 
+            mediaItem.url, 
+            mediaItem.thumbnail
+          );
         }
       }
       
@@ -258,12 +304,19 @@ export const useMaiSocial = (user?: User | null) => {
       // 3. Add media if any
       if (postData.media && postData.media.length > 0 && post) {
         for (const mediaItem of postData.media) {
-          await socialApi.addPostMedia(
-            post.id, 
-            mediaItem.type as 'image' | 'video', 
-            mediaItem.url, 
-            mediaItem.thumbnail
-          );
+          // For demo purposes, we'll simulate the media upload
+          // In production, the media would already be uploaded to Supabase Storage
+          if (mediaItem.url.startsWith('data:')) {
+            // This is a base64 data URL from file preview, skip for demo
+            console.log('Skipping base64 media upload in demo mode');
+          } else {
+            await socialApi.addPostMedia(
+              post.id, 
+              mediaItem.type as 'image' | 'video', 
+              mediaItem.url, 
+              mediaItem.thumbnail
+            );
+          }
         }
       }
       
@@ -305,7 +358,7 @@ export const useMaiSocial = (user?: User | null) => {
   };
 
   // Upload a video with progress tracking
-  const uploadVideo = async (videoFile: File, onProgress?: (progress: number) => void) => {
+  const uploadVideoToStorage = async (videoFile: File, onProgress?: (progress: number) => void) => {
     if (!videoFile) {
       setUploadProgress({
         status: 'error',
@@ -344,24 +397,12 @@ export const useMaiSocial = (user?: User | null) => {
       // Upload to Supabase Storage
       const filePath = `videos/${Math.random().toString(36).substring(2, 15)}_${videoFile.name}`;
       
-      // Create a thumbnail (in a real app, you would generate this from the video)
-      // For now, we'll use a placeholder
-      const thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
-      
       // Upload the file with progress tracking
       const { data, error } = await supabase.storage
-        .from('social-media')
+        .from('mai-social')
         .upload(filePath, videoFile, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress({
-              status: 'uploading',
-              progress: percent
-            });
-            if (onProgress) onProgress(percent);
-          }
         });
       
       if (error) {
@@ -378,7 +419,7 @@ export const useMaiSocial = (user?: User | null) => {
 
       // Get the public URL
       const { data: urlData } = supabase.storage
-        .from('social-media')
+        .from('mai-social')
         .getPublicUrl(filePath);
       
       // Simulate completion
@@ -387,7 +428,9 @@ export const useMaiSocial = (user?: User | null) => {
         progress: 100
       });
       
-      // In a real app, this would return the URL of the uploaded video
+      // Generate thumbnail (placeholder for demo)
+      const thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+      
       return {
         success: true,
         videoUrl: urlData.publicUrl,
@@ -545,36 +588,13 @@ export const useMaiSocial = (user?: User | null) => {
   // Fetch trending topics
   const fetchTrendingTopics = async () => {
     try {
-      // Query the database for trending tags
-      const { data, error } = await supabase
-        .from('social_post_tags')
-        .select(`
-          tag:tag_id(name),
-          count:tag_id(count)
-        `)
-        .order('count', { ascending: false })
-        .limit(5);
+      // Use the new getTrendingTags function
+      const data = await socialApi.getTrendingTags(5);
       
-      if (error) throw error;
-      
-      // Format the data
-      const topics = data.map((item: any) => ({
-        topic: item.tag.name,
-        count: item.count
+      const topics = data.map((tag: any) => ({
+        topic: tag.name,
+        count: tag.usage_count
       }));
-      
-      // If no data, use some defaults
-      if (topics.length === 0) {
-        const defaultTopics = [
-          { topic: 'HealthGoals', count: 1243 },
-          { topic: 'SmartSaving', count: 856 },
-          { topic: 'SummerStyle', count: 743 },
-          { topic: 'SmartHome', count: 621 },
-          { topic: 'MindfulMonday', count: 512 }
-        ];
-        setTrendingTopics(defaultTopics);
-        return { success: true, topics: defaultTopics };
-      }
       
       setTrendingTopics(topics);
       return { success: true, topics };
@@ -662,6 +682,32 @@ export const useMaiSocial = (user?: User | null) => {
       fetchPosts();
       fetchTrendingTopics();
       fetchSuggestedConnections();
+      
+      // Set up real-time subscriptions
+      const subscriptions = [
+        // Subscribe to new posts
+        socialApi.subscribeToNewPosts((payload) => {
+          console.log('New post created:', payload);
+          fetchPosts(); // Refresh posts when new ones are created
+        }),
+        
+        // Subscribe to user notifications
+        socialApi.subscribeToUserNotifications(user.id, (payload) => {
+          console.log('New notification:', payload);
+          // Handle new notifications (could show toast, update notification count, etc.)
+        })
+      ];
+      
+      setRealTimeSubscriptions(subscriptions);
+      
+      // Cleanup subscriptions on unmount
+      return () => {
+        subscriptions.forEach(subscription => {
+          if (subscription && typeof subscription.unsubscribe === 'function') {
+            subscription.unsubscribe();
+          }
+        });
+      };
     }
   }, [user]);
 
@@ -675,7 +721,7 @@ export const useMaiSocial = (user?: User | null) => {
     fetchPosts,
     createPost,
     createPostFromModal,
-    uploadVideo,
+    uploadVideo: uploadVideoToStorage,
     likePost,
     savePost,
     addComment,

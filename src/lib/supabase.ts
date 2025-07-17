@@ -10,13 +10,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Define types for database tables
+// Enhanced types for database tables with complete schema
 export type SocialPost = {
   id: string;
   user_id: string;
   content: string;
   vertical: 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome';
   achievement_id?: string;
+  is_pinned: boolean;
+  is_featured: boolean;
+  view_count: number;
   created_at: string;
   updated_at: string;
 };
@@ -30,6 +33,8 @@ export type SocialPostMedia = {
   width?: number;
   height?: number;
   duration?: number;
+  file_size?: number;
+  alt_text?: string;
   created_at: string;
 };
 
@@ -37,8 +42,10 @@ export type SocialComment = {
   id: string;
   post_id: string;
   user_id: string;
-  content: string;
   parent_id?: string;
+  content: string;
+  is_edited: boolean;
+  edited_at?: string;
   created_at: string;
   updated_at: string;
 };
@@ -61,6 +68,10 @@ export type SocialSave = {
 export type SocialTag = {
   id: string;
   name: string;
+  description?: string;
+  color: string;
+  usage_count: number;
+  is_trending: boolean;
   created_at: string;
 };
 
@@ -78,6 +89,8 @@ export type SocialAchievement = {
   description: string;
   icon: string;
   vertical: 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome';
+  points: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
   achieved_at: string;
   created_at: string;
 };
@@ -92,11 +105,12 @@ export type SocialFollow = {
 export type SocialNotification = {
   id: string;
   user_id: string;
-  type: 'like' | 'comment' | 'follow' | 'achievement' | 'mention';
+  type: 'like' | 'comment' | 'follow' | 'achievement' | 'mention' | 'post_featured';
   actor_id?: string;
   post_id?: string;
   comment_id?: string;
   achievement_id?: string;
+  message?: string;
   read: boolean;
   created_at: string;
 };
@@ -109,11 +123,14 @@ export const socialApi = {
       .from('social_posts')
       .select(`
         *,
-        user:user_id(*),
+        user:profiles!social_posts_user_id_fkey(id, name, avatar_url, type),
         media:social_post_media(*),
-        likes:social_likes(count),
-        comments:social_comments(count),
-        tags:social_post_tags(tag:social_tags(*))
+        achievement:social_achievements(*),
+        likes_count:social_likes(count),
+        comments_count:social_comments(count),
+        tags:social_post_tags(
+          tag:social_tags(*)
+        )
       `)
       .order('created_at', { ascending: false });
     
@@ -131,7 +148,14 @@ export const socialApi = {
     return data;
   },
   
-  async createPost(content: string, userId: string, vertical: string, achievementId?: string) {
+  async createPost(
+    content: string, 
+    userId: string, 
+    vertical: string, 
+    achievementId?: string,
+    isPinned: boolean = false,
+    isFeatured: boolean = false
+  ) {
     const { data, error } = await supabase
       .from('social_posts')
       .insert([
@@ -139,7 +163,9 @@ export const socialApi = {
           content, 
           user_id: userId, 
           vertical,
-          achievement_id: achievementId 
+          achievement_id: achievementId,
+          is_pinned: isPinned,
+          is_featured: isFeatured
         }
       ])
       .select();
@@ -153,13 +179,13 @@ export const socialApi = {
   },
   
   // Media
-  async uploadMedia(file: File, folder: string) {
+  async uploadMedia(file: File, folder: string = 'social-media') {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${folder}/${fileName}`;
     
     const { data, error } = await supabase.storage
-      .from('social-media')
+      .from('mai-social')
       .upload(filePath, file);
     
     if (error) {
@@ -168,13 +194,23 @@ export const socialApi = {
     }
     
     const { data: urlData } = supabase.storage
-      .from('social-media')
+      .from('mai-social')
       .getPublicUrl(filePath);
     
     return urlData.publicUrl;
   },
   
-  async addPostMedia(postId: string, mediaType: 'image' | 'video', url: string, thumbnailUrl?: string) {
+  async addPostMedia(
+    postId: string, 
+    mediaType: 'image' | 'video', 
+    url: string, 
+    thumbnailUrl?: string,
+    width?: number,
+    height?: number,
+    duration?: number,
+    fileSize?: number,
+    altText?: string
+  ) {
     const { data, error } = await supabase
       .from('social_post_media')
       .insert([
@@ -182,7 +218,12 @@ export const socialApi = {
           post_id: postId, 
           media_type: mediaType, 
           url,
-          thumbnail_url: thumbnailUrl 
+          thumbnail_url: thumbnailUrl,
+          width,
+          height,
+          duration,
+          file_size: fileSize,
+          alt_text: altText
         }
       ]);
     
@@ -246,8 +287,8 @@ export const socialApi = {
       .from('social_comments')
       .select(`
         *,
-        user:user_id(*),
-        likes:social_likes(count)
+        user:profiles!social_comments_user_id_fkey(id, name, avatar_url, type),
+        likes_count:social_likes(count)
       `)
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
@@ -294,13 +335,16 @@ export const socialApi = {
     const { data, error } = await supabase
       .from('social_saves')
       .select(`
-        post:post_id(
+        post:social_posts(
           *,
-          user:user_id(*),
+          user:profiles!social_posts_user_id_fkey(id, name, avatar_url, type),
           media:social_post_media(*),
-          likes:social_likes(count),
-          comments:social_comments(count),
-          tags:social_post_tags(tag:social_tags(*))
+          achievement:social_achievements(*),
+          likes_count:social_likes(count),
+          comments_count:social_comments(count),
+          tags:social_post_tags(
+            tag:social_tags(*)
+          )
         )
       `)
       .eq('user_id', userId)
@@ -315,10 +359,10 @@ export const socialApi = {
   },
   
   // Tags
-  async createTag(name: string) {
+  async createTag(name: string, description?: string, color: string = '#3B82F6') {
     const { data, error } = await supabase
       .from('social_tags')
-      .insert([{ name }])
+      .insert([{ name, description, color }])
       .select();
     
     if (error) {
@@ -342,13 +386,31 @@ export const socialApi = {
     return data;
   },
   
+  async getTrendingTags(limit: number = 10) {
+    const { data, error } = await supabase
+      .from('social_tags')
+      .select('*')
+      .or('is_trending.eq.true,usage_count.gte.100')
+      .order('usage_count', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching trending tags:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+  
   // Achievements
   async createAchievement(
     userId: string, 
     title: string, 
     description: string, 
     icon: string, 
-    vertical: 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome'
+    vertical: 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome',
+    points: number = 0,
+    rarity: 'common' | 'rare' | 'epic' | 'legendary' = 'common'
   ) {
     const { data, error } = await supabase
       .from('social_achievements')
@@ -358,7 +420,9 @@ export const socialApi = {
           title, 
           description, 
           icon, 
-          vertical 
+          vertical,
+          points,
+          rarity
         }
       ])
       .select();
@@ -407,10 +471,10 @@ export const socialApi = {
       .from('social_notifications')
       .select(`
         *,
-        actor:actor_id(*),
-        post:post_id(*),
-        comment:comment_id(*),
-        achievement:achievement_id(*)
+        actor:profiles!social_notifications_actor_id_fkey(id, name, avatar_url, type),
+        post:social_posts(*),
+        comment:social_comments(*),
+        achievement:social_achievements(*)
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
@@ -435,5 +499,86 @@ export const socialApi = {
     }
     
     return data;
+  },
+  
+  // Real-time subscriptions
+  subscribeToNewPosts(callback: (payload: any) => void) {
+    return supabase
+      .channel('social_posts_changes')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'social_posts' }, 
+        callback
+      )
+      .subscribe();
+  },
+  
+  subscribeToPostLikes(postId: string, callback: (payload: any) => void) {
+    return supabase
+      .channel(`post_${postId}_likes`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'social_likes',
+          filter: `post_id=eq.${postId}`
+        }, 
+        callback
+      )
+      .subscribe();
+  },
+  
+  subscribeToUserNotifications(userId: string, callback: (payload: any) => void) {
+    return supabase
+      .channel(`user_${userId}_notifications`)
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'social_notifications',
+          filter: `user_id=eq.${userId}`
+        }, 
+        callback
+      )
+      .subscribe();
+  },
+  
+  // Analytics and insights
+  async getPostAnalytics(postId: string) {
+    const { data: post, error: postError } = await supabase
+      .from('social_posts')
+      .select(`
+        *,
+        likes_count:social_likes(count),
+        comments_count:social_comments(count),
+        saves_count:social_saves(count)
+      `)
+      .eq('id', postId)
+      .single();
+    
+    if (postError) {
+      console.error('Error fetching post analytics:', postError);
+      throw postError;
+    }
+    
+    return post;
+  },
+  
+  async getUserStats(userId: string) {
+    const [postsResult, followersResult, followingResult, achievementsResult] = await Promise.all([
+      supabase.from('social_posts').select('id').eq('user_id', userId),
+      supabase.from('social_follows').select('id').eq('following_id', userId),
+      supabase.from('social_follows').select('id').eq('follower_id', userId),
+      supabase.from('social_achievements').select('id, points').eq('user_id', userId)
+    ]);
+    
+    const totalPoints = achievementsResult.data?.reduce((sum, achievement) => sum + (achievement.points || 0), 0) || 0;
+    
+    return {
+      posts_count: postsResult.data?.length || 0,
+      followers_count: followersResult.data?.length || 0,
+      following_count: followingResult.data?.length || 0,
+      achievements_count: achievementsResult.data?.length || 0,
+      total_points: totalPoints
+    };
   }
 };
