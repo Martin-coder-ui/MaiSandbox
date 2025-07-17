@@ -3,6 +3,7 @@ import { Menu, X, Moon, Sun, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useProfile } from '../../hooks/useProfile';
 import TestUserSwitcher from '../TestUserSwitcher';
 import LanguageSelector from '../LanguageSelector';
 import CurrencySelector from '../CurrencySelector';
@@ -15,6 +16,7 @@ type HeaderProps = {
 const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { profile } = useProfile();
   const { t } = useTranslation();
 
   return (
@@ -85,6 +87,16 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
           >
             {t('navigation.providerPortal')}
           </Link>
+          
+          {/* Profile Settings Link - only show when authenticated */}
+          {isAuthenticated && (
+            <Link 
+              to="/profile-settings" 
+              className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Profile Settings
+            </Link>
+          )}
           
           {/* Test User Switcher - only show when authenticated */}
           {isAuthenticated && <TestUserSwitcher />}
@@ -190,6 +202,17 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
             >
               {t('navigation.providerPortal')}
             </Link>
+            
+            {/* Mobile Profile Settings Link */}
+            {isAuthenticated && (
+              <Link 
+                to="/profile-settings" 
+                className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profile Settings
+              </Link>
+            )}
             
             {/* Mobile Currency Selector */}
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">

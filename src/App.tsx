@@ -19,6 +19,7 @@ import ScanScreen from './pages/ScanScreen';
 import AvatarScreen from './pages/AvatarScreen';
 import ProviderDashboardScreen from './pages/ProviderDashboardScreen';
 import ProviderRegistrationScreen from './pages/ProviderRegistrationScreen';
+import ProfileSettingsScreen from './pages/ProfileSettingsScreen';
 import useDarkMode from './hooks/useDarkMode';
 
 const App: React.FC = () => {
@@ -45,6 +46,7 @@ const App: React.FC = () => {
             <Route path="/avatar" element={<AvatarScreen />} />
             <Route path="/provider-dashboard" element={<ProviderDashboardScreen />} />
             <Route path="/provider-register" element={<ProviderRegistrationScreen />} />
+            <Route path="/profile-settings" element={<ProfileSettingsScreen />} />
           </Routes>
         </MainContent>
         <Footer />
