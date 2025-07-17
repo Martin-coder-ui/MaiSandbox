@@ -100,82 +100,132 @@ const generateBankingRecommendations = (
     currentSavings, 
     existingBankAccounts, 
     riskTolerance, 
-    financialGoals 
+    financialGoals,
+    debt
   } = userProfile.financeData;
+  
+  const { age, interests } = userProfile;
 
-  // High-yield savings account for users with savings goals
-  if (financialGoals?.includes('emergency-fund') || currentSavings > 5000) {
+  // Enhanced savings account recommendations
+  if (financialGoals?.includes('Build emergency fund') || currentSavings > 5000) {
+    const hasEmergencyGoal = financialGoals?.includes('Build emergency fund');
+    const currentSavingsAmount = currentSavings || 0;
+    const recommendedEmergencyFund = (monthlyIncome || 3000) * 6; // 6 months expenses
+    const savingsGap = recommendedEmergencyFund - currentSavingsAmount;
+    
     recommendations.push({
       id: 'banking_1',
-      name: 'Marcus High-Yield Savings Account',
-      description: 'Competitive interest rates with no minimum balance requirements.',
+      name: hasEmergencyGoal ? 'Emergency Fund High-Yield Account' : 'Marcus High-Yield Savings Account',
+      description: hasEmergencyGoal ? 'Dedicated emergency fund account with instant access and competitive rates.' : 'Competitive interest rates with no minimum balance requirements.',
       imageUrl: 'https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Perfect for building emergency funds with competitive rates.',
-      matchScore: 92,
+      reason: hasEmergencyGoal ? 'Essential for financial security - emergency funds should be easily accessible.' : 'Perfect for building savings with competitive rates.',
+      matchScore: hasEmergencyGoal ? 96 : 88,
       provider: 'Marcus by Goldman Sachs',
       productType: 'savings-account',
       interestRate: 4.2,
       fees: 'No fees',
       benefits: ['4.2% AER', 'No minimum balance', 'Easy access', 'FSCS protected'],
-      personalizedReason: `With your savings goal of ${currentSavings > 10000 ? 'building wealth' : 'emergency fund'}, this high-yield account could earn you significantly more than traditional savings accounts.`,
+      personalizedReason: hasEmergencyGoal
+        ? `You need £${savingsGap.toLocaleString()} more to reach your 6-month emergency fund target. This account will help you earn while you save.`
+        : `With £${currentSavingsAmount.toLocaleString()} in savings, this high-yield account could earn you significantly more than traditional accounts.`,
       localAvailability: location ? `Available online throughout ${location.region}` : 'Available online nationwide'
     });
   }
 
   // Premium current account for higher earners
   if (monthlyIncome && monthlyIncome > 4000) {
+    const isHighEarner = monthlyIncome > 7500;
+    const hasInvestmentGoals = financialGoals?.includes('Investment portfolio');
+    
     recommendations.push({
       id: 'banking_2',
-      name: 'HSBC Premier Current Account',
-      description: 'Premium banking with global benefits and dedicated relationship manager.',
+      name: isHighEarner ? 'HSBC Premier World Elite Account' : 'HSBC Premier Current Account',
+      description: isHighEarner ? 'Elite banking with investment advisory, global benefits, and priority services.' : 'Premium banking with global benefits and dedicated relationship manager.',
       imageUrl: 'https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Designed for higher earners with comprehensive benefits.',
-      matchScore: 88,
+      reason: hasInvestmentGoals ? 'Includes investment advisory services aligned with your investment goals.' : 'Designed for higher earners with comprehensive benefits.',
+      matchScore: hasInvestmentGoals ? 94 : 85,
       provider: 'HSBC',
       productType: 'premium-account',
-      fees: '£25/month (waived with £75k+ balance)',
-      benefits: ['Dedicated relationship manager', 'Global ATM access', 'Travel insurance', 'Investment advice'],
-      personalizedReason: `Your income level of £${monthlyIncome}/month qualifies you for premium banking benefits including travel insurance and investment guidance.`,
+      fees: isHighEarner ? '£40/month (waived with £100k+ balance)' : '£25/month (waived with £75k+ balance)',
+      benefits: isHighEarner 
+        ? ['Priority investment advisory', 'Global concierge service', 'Premium travel insurance', 'Exclusive events access']
+        : ['Dedicated relationship manager', 'Global ATM access', 'Travel insurance', 'Investment advice'],
+      personalizedReason: hasInvestmentGoals
+        ? `Your £${monthlyIncome}/month income and investment goals make you ideal for premium banking with integrated investment services.`
+        : `Your income level of £${monthlyIncome}/month qualifies you for premium banking benefits including travel insurance and investment guidance.`,
       localAvailability: location ? `HSBC branches available in ${location.city}` : 'Nationwide branch network'
     });
   }
 
   // Ethical banking for environmentally conscious users
   if (userProfile.interests?.includes('Nature & Outdoors') || userProfile.preferences?.includes('sustainability')) {
+    const isEnvironmentallyFocused = interests?.includes('Gardening') || interests?.includes('Nature & Outdoors');
+    
     recommendations.push({
       id: 'banking_3',
-      name: 'Triodos Bank Current Account',
-      description: 'Ethical banking that only finances sustainable projects.',
+      name: isEnvironmentallyFocused ? 'Triodos Bank Sustainable Living Account' : 'Triodos Bank Current Account',
+      description: isEnvironmentallyFocused ? 'Ethical banking with additional rewards for sustainable lifestyle choices.' : 'Ethical banking that only finances sustainable projects.',
       imageUrl: 'https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Aligns with your values by supporting sustainable initiatives.',
-      matchScore: 85,
+      reason: isEnvironmentallyFocused ? 'Perfect match for your environmental interests and sustainable lifestyle.' : 'Aligns with your values by supporting sustainable initiatives.',
+      matchScore: isEnvironmentallyFocused ? 92 : 82,
       provider: 'Triodos Bank',
       productType: 'current-account',
       fees: '£3/month',
-      benefits: ['100% sustainable financing', 'Transparent impact reporting', 'Ethical investment options', 'Carbon-neutral operations'],
-      personalizedReason: 'Based on your interest in environmental causes, this ethical bank ensures your money supports positive environmental and social impact.',
+      benefits: isEnvironmentallyFocused 
+        ? ['100% sustainable financing', 'Rewards for green purchases', 'Carbon footprint tracking', 'Tree planting program']
+        : ['100% sustainable financing', 'Transparent impact reporting', 'Ethical investment options', 'Carbon-neutral operations'],
+      personalizedReason: isEnvironmentallyFocused
+        ? 'Your interests in nature and gardening align perfectly with this bank\'s mission to finance only sustainable projects and reward eco-friendly choices.'
+        : 'Based on your interest in environmental causes, this ethical bank ensures your money supports positive environmental and social impact.',
       localAvailability: 'Online banking with sustainable ATM network'
     });
   }
 
   // ISA recommendations for tax-efficient savings
   if (financialGoals?.includes('house-deposit') || financialGoals?.includes('investment-portfolio')) {
+    const isFirstTimeBuyer = financialGoals?.includes('Save for house deposit');
+    const targetAmount = isFirstTimeBuyer ? 50000 : 20000; // Typical house deposit vs general investment
+    
     recommendations.push({
       id: 'banking_4',
-      name: 'Stocks & Shares ISA',
-      description: 'Tax-efficient investing for long-term growth.',
+      name: isFirstTimeBuyer ? 'Lifetime ISA for First-Time Buyers' : 'Stocks & Shares ISA',
+      description: isFirstTimeBuyer ? 'Government bonus of 25% on contributions up to £4,000 annually for house purchases.' : 'Tax-efficient investing for long-term growth.',
       imageUrl: 'https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Maximize tax-free growth for your long-term financial goals.',
-      matchScore: 90,
-      provider: 'Vanguard',
+      reason: isFirstTimeBuyer ? 'Government bonus makes this the most efficient way to save for your first home.' : 'Maximize tax-free growth for your long-term financial goals.',
+      matchScore: isFirstTimeBuyer ? 96 : 88,
+      provider: isFirstTimeBuyer ? 'Monzo or Skipton Building Society' : 'Vanguard',
       productType: 'isa',
-      fees: '0.15% annual charge',
-      benefits: ['£20,000 annual allowance', 'Tax-free growth', 'Low-cost index funds', 'Flexible contributions'],
-      personalizedReason: `Perfect for your ${financialGoals.includes('house-deposit') ? 'house deposit' : 'investment'} goals with tax-free growth potential.`,
+      fees: isFirstTimeBuyer ? 'No fees' : '0.15% annual charge',
+      benefits: isFirstTimeBuyer 
+        ? ['25% government bonus', '£4,000 annual limit', 'Tax-free growth', 'First-time buyer exclusive']
+        : ['£20,000 annual allowance', 'Tax-free growth', 'Low-cost index funds', 'Flexible contributions'],
+      personalizedReason: isFirstTimeBuyer
+        ? `For your house deposit goal, the government will add £1,000 for every £4,000 you save - essentially free money towards your home.`
+        : `Perfect for your investment goals with tax-free growth potential and flexible contribution options.`,
       localAvailability: 'Online platform with comprehensive support'
     });
   }
 
+  // Debt consolidation for users with significant debt
+  if (debt && debt > 5000) {
+    const isHighDebt = debt > 15000;
+    const debtToIncomeRatio = monthlyIncome ? (debt / (monthlyIncome * 12)) : 0;
+    
+    recommendations.push({
+      id: 'banking_debt',
+      name: isHighDebt ? 'Debt Consolidation Loan' : 'Personal Loan for Debt Management',
+      description: isHighDebt ? 'Consolidate multiple debts into one manageable monthly payment with lower interest.' : 'Streamline your debt with a lower-interest personal loan.',
+      imageUrl: 'https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=400',
+      reason: debtToIncomeRatio > 0.4 ? 'Your debt-to-income ratio indicates urgent need for debt restructuring.' : 'Consolidating debt can reduce monthly payments and total interest paid.',
+      matchScore: debtToIncomeRatio > 0.4 ? 95 : 85,
+      provider: isHighDebt ? 'Zopa or Lending Works' : 'High Street Bank',
+      productType: 'current-account',
+      fees: 'No arrangement fees',
+      benefits: ['Lower interest rates', 'Single monthly payment', 'Fixed repayment term', 'Debt-free date certainty'],
+      personalizedReason: `With £${debt.toLocaleString()} in debt, consolidation could save you hundreds in interest and simplify your finances.`,
+      localAvailability: location ? `Available online and in ${location.city}` : 'Available online and nationwide'
+    });
+  }
   return recommendations;
 };
 

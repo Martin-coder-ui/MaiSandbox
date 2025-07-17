@@ -133,12 +133,12 @@ const getSeasonalClothingRecommendations = (season: string, location?: Geolocati
           name: 'Light Trench Coat',
           description: 'Perfect transitional piece for unpredictable spring weather.',
           imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Ideal for spring\'s changing temperatures and occasional rain.',
+          reason: location?.weather?.condition === 'rainy' ? 'Essential for current rainy conditions in your area.' : 'Ideal for spring\'s changing temperatures and occasional rain.',
           styleMatch: 88,
           category: 'outerwear',
           season: 'spring',
           supplier: 'Zara',
-          seasonalNote: 'Perfect for spring layering'
+          seasonalNote: location ? `Perfect for ${location.city}'s spring weather` : 'Perfect for spring layering'
         },
         {
           id: 'spring_2',
@@ -162,24 +162,24 @@ const getSeasonalClothingRecommendations = (season: string, location?: Geolocati
           name: 'Linen Wide-Leg Trousers',
           description: 'Breathable and comfortable for hot summer days.',
           imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Natural fibers keep you cool in summer heat.',
+          reason: location?.weather?.temperature && location.weather.temperature > 25 ? 'Essential for the current high temperatures in your area.' : 'Natural fibers keep you cool in summer heat.',
           styleMatch: 92,
           category: 'bottoms',
           season: 'summer',
           supplier: 'Arket',
-          seasonalNote: 'Essential for summer comfort'
+          seasonalNote: location?.weather?.temperature && location.weather.temperature > 25 ? `Perfect for ${location.city}'s ${location.weather.temperature}°C weather` : 'Essential for summer comfort'
         },
         {
           id: 'summer_2',
           name: 'UV Protection Maxi Dress',
           description: 'Stylish sun protection with built-in UPF.',
           imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Combines style with essential sun protection.',
+          reason: location?.weather?.uvIndex && location.weather.uvIndex > 6 ? 'Critical for current high UV levels in your area.' : 'Combines style with essential sun protection.',
           styleMatch: 87,
           category: 'dresses',
           season: 'summer',
           supplier: 'Uniqlo',
-          seasonalNote: 'Smart summer protection'
+          seasonalNote: location?.weather?.uvIndex ? `UV protection for ${location.city}'s UV index ${location.weather.uvIndex}` : 'Smart summer protection'
         }
       );
       break;
@@ -191,12 +191,12 @@ const getSeasonalClothingRecommendations = (season: string, location?: Geolocati
           name: 'Wool Blend Cardigan',
           description: 'Cozy layering piece in rich autumn tones.',
           imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Perfect for autumn\'s cooler temperatures and layering needs.',
+          reason: location?.weather?.temperature && location.weather.temperature < 15 ? 'Essential for the dropping temperatures in your area.' : 'Perfect for autumn\'s cooler temperatures and layering needs.',
           styleMatch: 90,
           category: 'tops',
           season: 'autumn',
           supplier: 'Whistles',
-          seasonalNote: 'Autumn layering essential'
+          seasonalNote: location ? `Perfect for ${location.city}'s autumn weather` : 'Autumn layering essential'
         },
         {
           id: 'autumn_2',
@@ -220,24 +220,24 @@ const getSeasonalClothingRecommendations = (season: string, location?: Geolocati
           name: 'Cashmere Turtleneck',
           description: 'Luxurious warmth for cold winter days.',
           imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Premium insulation with sophisticated style.',
+          reason: location?.weather?.temperature && location.weather.temperature < 5 ? 'Essential luxury warmth for current freezing conditions.' : 'Premium insulation with sophisticated style.',
           styleMatch: 94,
           category: 'tops',
           season: 'winter',
           supplier: 'John Smedley',
-          seasonalNote: 'Winter luxury essential'
+          seasonalNote: location?.weather?.temperature && location.weather.temperature < 0 ? `Critical warmth for ${location.city}'s freezing weather` : 'Winter luxury essential'
         },
         {
           id: 'winter_2',
           name: 'Down Puffer Coat',
           description: 'Maximum warmth without bulk.',
           imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-          reason: 'Essential protection against winter cold.',
+          reason: location?.weather?.temperature && location.weather.temperature < 0 ? 'Critical protection against current sub-zero temperatures.' : 'Essential protection against winter cold.',
           styleMatch: 89,
           category: 'outerwear',
           season: 'winter',
           supplier: 'Canada Goose',
-          seasonalNote: 'Winter weather protection'
+          seasonalNote: location?.weather?.temperature ? `Essential for ${location.city}'s ${location.weather.temperature}°C weather` : 'Winter weather protection'
         }
       );
       break;
@@ -405,22 +405,26 @@ export const useMaiStyleRecommendations = (
 
         // --- Clothing Recommendations Based on Style Preference ---
         if (stylePreference === 'minimalist') {
+          const { budget, lifestyle } = userProfile.styleData;
+          const isHighBudget = budget === 'over-2000';
+          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
+          
           newRecommendations.clothing.push(
             {
               id: 'c_min1',
-              name: 'Tailored Black Trousers',
-              description: 'Clean lines and perfect fit for a sleek silhouette.',
+              name: isHighBudget ? 'Designer Tailored Black Trousers' : 'Tailored Black Trousers',
+              description: isHighBudget ? 'Premium fabric with impeccable tailoring for a luxury minimalist look.' : 'Clean lines and perfect fit for a sleek silhouette.',
               imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Aligns with minimalist aesthetic, focusing on quality and simplicity.',
-              styleMatch: 95,
+              reason: isProfessional ? 'Perfect for your professional lifestyle while maintaining minimalist principles.' : 'Aligns with minimalist aesthetic, focusing on quality and simplicity.',
+              styleMatch: isProfessional ? 98 : 92,
               category: 'bottoms',
               season: 'all',
-              supplier: 'COS'
+              supplier: isHighBudget ? 'The Row' : 'COS'
             },
             {
               id: 'c_min2',
-              name: 'Cashmere Turtleneck',
-              description: 'Luxurious and understated, perfect for layering.',
+              name: isHighBudget ? 'Pure Cashmere Turtleneck' : 'Cashmere Blend Turtleneck',
+              description: isHighBudget ? 'Finest cashmere for ultimate luxury and comfort.' : 'Luxurious and understated, perfect for layering.',
               imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
               reason: 'High-quality basics are the foundation of minimalist style.',
               styleMatch: 92,
@@ -489,27 +493,33 @@ export const useMaiStyleRecommendations = (
           newRecommendations.clothing.push(...seasonalClothing);
         }
 
-        // Add color palette specific clothing
+        // Enhanced color palette specific clothing
         if (colorPalette === 'cool-tones') {
+          const { skinTone, lifestyle } = userProfile.styleData;
+          const isCoolUndertones = skinTone === 'cool-undertones';
+          
           newRecommendations.clothing.push({
             id: 'c_cool1',
-            name: 'Sapphire Blue Silk Blouse',
-            description: 'Luxurious fabric in a flattering cool tone.',
+            name: isCoolUndertones ? 'Sapphire Blue Silk Blouse' : 'Cool-Toned Silk Blouse',
+            description: isCoolUndertones ? 'Perfect match for your cool undertones in luxurious silk.' : 'Luxurious fabric in a flattering cool tone.',
             imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-            reason: 'Complements cool undertones, enhancing natural complexion.',
-            styleMatch: 88,
+            reason: isCoolUndertones ? 'Perfectly matched to your skin tone for maximum color harmony.' : 'Complements cool undertones, enhancing natural complexion.',
+            styleMatch: isCoolUndertones ? 95 : 85,
             category: 'tops',
             season: 'all',
             supplier: 'Ganni'
           });
         } else if (colorPalette === 'warm-tones') {
+          const { skinTone, lifestyle } = userProfile.styleData;
+          const isWarmUndertones = skinTone === 'warm-undertones';
+          
           newRecommendations.clothing.push({
             id: 'c_warm1',
-            name: 'Terracotta Wrap Dress',
-            description: 'Warm, earthy tone that flatters warm undertones.',
+            name: isWarmUndertones ? 'Terracotta Wrap Dress' : 'Warm-Toned Wrap Dress',
+            description: isWarmUndertones ? 'Perfect harmony with your warm undertones in a flattering wrap style.' : 'Warm, earthy tone that flatters warm undertones.',
             imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-            reason: 'Enhances warm undertones and creates a radiant glow.',
-            styleMatch: 89,
+            reason: isWarmUndertones ? 'Enhances your natural warm undertones for a radiant, healthy glow.' : 'Enhances warm undertones and creates a radiant glow.',
+            styleMatch: isWarmUndertones ? 94 : 86,
             category: 'dresses',
             season: 'autumn',
             supplier: 'Mango'
@@ -518,18 +528,21 @@ export const useMaiStyleRecommendations = (
 
         // --- Hair Recommendations Based on Hair Type and Face Shape ---
         if (hairType === 'fine-straight') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isLowMaintenance = lifestyle === 'active' || lifestyle === 'casual';
+          
           newRecommendations.hair.push(
             {
               id: 'h_fine1',
-              name: 'Layered Bob with Bangs',
-              description: 'Adds volume and movement to fine, straight hair.',
+              name: isLowMaintenance ? 'Low-Maintenance Layered Bob' : 'Layered Bob with Bangs',
+              description: isLowMaintenance ? 'Easy-care cut that adds volume with minimal styling required.' : 'Adds volume and movement to fine, straight hair.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Creates the illusion of fullness and frames the face beautifully.',
-              matchScore: 92,
-              difficulty: 'medium',
-              timeRequired: '20 minutes',
+              reason: isLowMaintenance ? 'Perfect for your active lifestyle while maximizing your hair\'s natural volume.' : 'Creates the illusion of fullness and frames the face beautifully.',
+              matchScore: isLowMaintenance ? 95 : 88,
+              difficulty: isLowMaintenance ? 'easy' : 'medium',
+              timeRequired: isLowMaintenance ? '10 minutes' : '20 minutes',
               supplier: location ? `Hair salons in ${location.city}` : 'Local Hair Salon',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : currentSeason === 'winter' ? 'Great for winter - adds warmth around face' : undefined
             },
             {
               id: 'h_fine2',
@@ -544,18 +557,21 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (hairType === 'thick-curly' || hairType === 'thick-wavy') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isHighMaintenance = budget === 'over-2000';
+          
           newRecommendations.hair.push(
             {
               id: 'h_thick1',
-              name: 'Long Layered Curls',
-              description: 'Enhances natural curl pattern with strategic layers.',
+              name: isHighMaintenance ? 'Professional Curl Enhancement Treatment' : 'Long Layered Curls',
+              description: isHighMaintenance ? 'Salon treatment to enhance and define your natural curl pattern with professional products.' : 'Enhances natural curl pattern with strategic layers.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Works with your natural texture to create beautiful, defined curls.',
-              matchScore: 94,
-              difficulty: 'medium',
-              timeRequired: '25 minutes',
+              reason: isHighMaintenance ? 'Professional treatment will maximize your curl potential with salon-quality results.' : 'Works with your natural texture to create beautiful, defined curls.',
+              matchScore: isHighMaintenance ? 97 : 91,
+              difficulty: isHighMaintenance ? 'easy' : 'medium',
+              timeRequired: isHighMaintenance ? '15 minutes with treatment' : '25 minutes',
               supplier: location ? `Curl specialists in ${location.city}` : 'Curl Specialist Salon',
-              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : currentSeason === 'summer' ? 'Embrace natural texture in humid weather' : undefined
             }
           );
         } else {
@@ -564,18 +580,21 @@ export const useMaiStyleRecommendations = (
 
         // --- Makeup Recommendations Based on Skin Tone and Lifestyle ---
         if (skinTone === 'cool-undertones') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
+          
           newRecommendations.makeup.push(
             {
               id: 'm_cool1',
-              name: 'Berry Lip and Rosy Cheeks',
-              description: 'Cool-toned colors that complement your complexion.',
+              name: isProfessional ? 'Professional Cool-Toned Look' : 'Berry Lip and Rosy Cheeks',
+              description: isProfessional ? 'Sophisticated cool tones perfect for professional settings.' : 'Cool-toned colors that complement your complexion.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Enhances the natural coolness of your complexion.',
-              matchScore: 87,
-              occasion: 'everyday',
-              products: ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
+              reason: isProfessional ? 'Cool tones enhance your complexion while maintaining professional appropriateness.' : 'Enhances the natural coolness of your complexion.',
+              matchScore: isProfessional ? 92 : 84,
+              occasion: isProfessional ? 'work' : 'everyday',
+              products: isProfessional ? ['Neutral berry lip', 'Subtle pink blush', 'Taupe eyeshadow'] : ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
               supplier: 'Charlotte Tilbury',
-              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : currentSeason === 'spring' ? 'Fresh spring colors' : undefined
             },
             {
               id: 'm_cool2',
@@ -590,18 +609,21 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (skinTone === 'warm-undertones') {
+          const { lifestyle, budget } = userProfile.styleData;
+          const isActive = lifestyle === 'active';
+          
           newRecommendations.makeup.push(
             {
               id: 'm_warm1',
-              name: 'Golden Glow Look',
-              description: 'Warm, bronzed look that enhances your natural radiance.',
+              name: isActive ? 'Natural Warm Glow' : 'Golden Glow Look',
+              description: isActive ? 'Long-wearing warm tones perfect for active lifestyles.' : 'Warm, bronzed look that enhances your natural radiance.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Warm tones complement your undertones perfectly.',
-              matchScore: 90,
+              reason: isActive ? 'Sweat-resistant warm tones that complement your active lifestyle.' : 'Warm tones complement your undertones perfectly.',
+              matchScore: isActive ? 93 : 87,
               occasion: 'everyday',
-              products: ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
+              products: isActive ? ['Waterproof bronze eyeshadow', 'Cream peach blush', 'Tinted lip balm'] : ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
               supplier: 'Fenty Beauty',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : currentSeason === 'autumn' ? 'Warm autumn radiance' : undefined
             }
           );
         } else {
@@ -631,10 +653,14 @@ export const useMaiStyleRecommendations = (
               matchScore: 88,
               type: 'ring',
               metal: 'gold',
-              supplier: 'Mejuri'
+              supplier: isHighBudget ? 'Brunello Cucinelli' : 'Arket'
             }
           );
         } else if (stylePreference === 'bohemian') {
+          const { budget, lifestyle } = userProfile.styleData;
+          const isCreativeLifestyle = lifestyle === 'creative';
+          const lovesTravel = userProfile.interests?.includes('Travel');
+          
           newRecommendations.jewelry.push(
             {
               id: 'j_boh1',
@@ -658,14 +684,14 @@ export const useMaiStyleRecommendations = (
             {
               id: 'n_edgy1',
               name: 'Matte Black Nails',
-              description: 'Bold and modern statement for an edgy look.',
-              imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
+              name: lovesTravel ? 'Travel-Friendly Maxi Dress' : 'Flowy Maxi Dress',
+              description: lovesTravel ? 'Wrinkle-resistant fabric perfect for travel adventures with bohemian flair.' : 'Comfortable and free-spirited with beautiful prints.',
               reason: 'Reflects a strong, unconventional style.',
-              matchScore: 90,
-              length: 'medium',
+              reason: isCreativeLifestyle ? 'Perfect for your creative lifestyle with artistic bohemian elements.' : 'Embraces the bohemian style with natural fabrics and relaxed silhouettes.',
+              styleMatch: lovesTravel ? 94 : 87,
               finish: 'matte',
               maintenance: 'medium',
-              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon'
+              supplier: lovesTravel ? 'Reformation' : 'Free People'
             },
             {
               id: 'n_edgy2',
@@ -676,39 +702,43 @@ export const useMaiStyleRecommendations = (
               matchScore: 85,
               length: 'medium',
               finish: 'glossy',
-              maintenance: 'high',
-              supplier: location ? `Nail art specialists in ${location.city}` : 'Nail Art Specialist'
+              name: isCreativeLifestyle ? 'Artist-Designed Kimono' : 'Embroidered Kimono',
+              description: isCreativeLifestyle ? 'Unique artistic piece that reflects your creative spirit.' : 'Perfect layering piece with artistic details.',
             }
-          );
-        } else if (stylePreference === 'romantic') {
+              reason: isCreativeLifestyle ? 'Expresses your artistic nature while maintaining bohemian aesthetic.' : 'Adds texture and visual interest typical of bohemian style.',
+              styleMatch: isCreativeLifestyle ? 93 : 85,
           newRecommendations.nails.push(
             {
-              id: 'n_rom1',
+              supplier: isCreativeLifestyle ? 'Local Artisan Markets' : 'Anthropologie'
               name: 'Soft Pink Ombre',
               description: 'Delicate gradient from clear to soft pink.',
               imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
+          const { budget, lifestyle } = userProfile.styleData;
+          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
+          const isHighBudget = budget === 'over-2000';
+          
               reason: 'Enhances a romantic and gentle aesthetic.',
               matchScore: 87,
               length: 'medium',
-              finish: 'glossy',
-              maintenance: 'medium',
+              name: isHighBudget ? 'Savile Row Tailored Navy Blazer' : 'Navy Blazer',
+              description: isHighBudget ? 'Bespoke tailoring with finest materials for the ultimate classic piece.' : 'Timeless piece that elevates any outfit.',
               supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon',
-              seasonalNote: currentSeason === 'spring' ? 'Perfect for spring romance' : undefined
-            }
+              reason: isProfessional ? 'Essential for your professional wardrobe and classic style preference.' : 'Essential for classic style, versatile and always appropriate.',
+              styleMatch: isProfessional ? 98 : 91,
           );
         } else if (lifestyle === 'professional-casual') {
-          newRecommendations.nails.push(
+              supplier: isHighBudget ? 'Huntsman Savile Row' : 'Reiss'
             {
               id: 'n_prof1',
               name: 'Neutral Gel Manicure',
-              description: 'Long-lasting professional look in neutral tones.',
-              imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
+              name: isProfessional ? 'Executive Pencil Skirt' : 'Classic Pencil Skirt',
+              description: isProfessional ? 'Professional-grade tailoring designed for executive presence.' : 'Flattering silhouette perfect for professional settings.',
               reason: 'Perfect for professional settings while maintaining style.',
-              matchScore: 93,
-              length: 'short',
+              reason: isProfessional ? 'Essential for your professional wardrobe with classic elegance.' : 'Classic piece that creates an elegant, polished look.',
+              styleMatch: isProfessional ? 95 : 88,
               finish: 'glossy',
               maintenance: 'low',
-              supplier: location ? `Professional nail salons in ${location.city}` : 'Professional Nail Salon'
+              supplier: isProfessional ? 'Theory' : 'Whistles'
             }
           );
         } else {

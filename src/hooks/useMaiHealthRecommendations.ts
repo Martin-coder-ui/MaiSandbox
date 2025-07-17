@@ -106,10 +106,12 @@ const generatePreventiveCare = (
   
   if (!userProfile) return recommendations;
 
-  const { age, gender, healthData } = userProfile;
+  const { age, gender, healthData, socialEngagement } = userProfile;
   const familyHistory = healthData?.familyMedicalHistory || [];
   const currentConditions = healthData?.medicalConditions || [];
   const vaccinationStatus = healthData?.vaccinationStatus || [];
+  const allergies = healthData?.allergies || [];
+  const medications = healthData?.medications || [];
 
   // Age-based screenings
   if (age && age >= 40) {
@@ -118,107 +120,158 @@ const generatePreventiveCare = (
       name: 'Annual Heart Health Screening',
       description: 'Comprehensive cardiovascular assessment including ECG and stress test.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Heart disease risk increases with age, especially after 40.',
-      matchScore: 90,
+      reason: familyHistory.includes('heart disease') ? 'Family history of heart disease increases your risk significantly.' : 'Heart disease risk increases with age, especially after 40.',
+      matchScore: familyHistory.includes('heart disease') ? 95 : 85,
       provider: 'Cardiology Specialists',
       category: 'screening',
-      urgency: 'medium',
+      urgency: familyHistory.includes('heart disease') ? 'high' : 'medium',
       frequency: 'Annually',
       ageRelevant: true,
-      personalizedReason: `At age ${age}, regular heart screenings can detect early signs of cardiovascular disease.`,
+      personalizedReason: familyHistory.includes('heart disease') 
+        ? `At age ${age} with family history of heart disease, regular screenings are crucial for early detection.`
+        : `At age ${age}, regular heart screenings can detect early signs of cardiovascular disease.`,
       localAvailability: location ? `Available at hospitals in ${location.city}` : 'Available at local hospitals'
     });
   }
 
+  // Enhanced diabetes screening based on risk factors
+  if (age && age >= 35) {
+    const diabetesRiskFactors = [
+      familyHistory.includes('diabetes'),
+      currentConditions.includes('High blood pressure'),
+      currentConditions.includes('High cholesterol'),
+      // Add BMI check if available in future
+    ].filter(Boolean).length;
+
+    if (diabetesRiskFactors > 0 || !vaccinationStatus.includes('Diabetes screening')) {
+      recommendations.push({
+        id: 'preventive_diabetes',
+        name: 'Comprehensive Diabetes Screening',
+        description: 'HbA1c, fasting glucose, and insulin resistance testing.',
+        imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
+        reason: diabetesRiskFactors > 1 ? 'Multiple risk factors detected for diabetes.' : 'Regular screening recommended for your age group.',
+        matchScore: diabetesRiskFactors > 1 ? 95 : 80,
+        provider: 'GP Surgery or Diabetes Clinic',
+        category: 'screening',
+        urgency: diabetesRiskFactors > 1 ? 'high' : 'medium',
+        frequency: diabetesRiskFactors > 1 ? 'Annually' : 'Every 2 years',
+        ageRelevant: true,
+        personalizedReason: diabetesRiskFactors > 1 
+          ? `With ${diabetesRiskFactors} risk factors including ${familyHistory.includes('diabetes') ? 'family history' : 'health conditions'}, regular monitoring is essential.`
+          : 'Early detection allows for lifestyle interventions that can prevent or delay diabetes onset.',
+        localAvailability: location ? `GP surgeries and diabetes clinics in ${location.city}` : 'Available at GP surgeries'
+      });
+    }
+  }
   if (age && age >= 50) {
     recommendations.push({
       id: 'preventive_2',
       name: 'Colonoscopy Screening',
       description: 'Early detection screening for colorectal cancer.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Colorectal cancer screening is recommended starting at age 50.',
-      matchScore: 95,
+      reason: familyHistory.includes('colorectal cancer') ? 'Family history requires earlier and more frequent screening.' : 'Colorectal cancer screening is recommended starting at age 50.',
+      matchScore: familyHistory.includes('colorectal cancer') ? 98 : 90,
       provider: 'Gastroenterology Department',
       category: 'screening',
       urgency: 'high',
-      frequency: 'Every 10 years',
+      frequency: familyHistory.includes('colorectal cancer') ? 'Every 5 years' : 'Every 10 years',
       ageRelevant: true,
-      personalizedReason: 'Early detection of colorectal cancer significantly improves treatment outcomes.',
+      personalizedReason: familyHistory.includes('colorectal cancer')
+        ? 'With family history of colorectal cancer, more frequent screening significantly improves early detection rates.'
+        : 'Early detection of colorectal cancer significantly improves treatment outcomes.',
       localAvailability: location ? `NHS and private options in ${location.city}` : 'NHS and private options available'
     });
   }
 
   // Gender-specific screenings
   if (gender === 'female' && age && age >= 25) {
+    const cervicalRiskFactors = [
+      !vaccinationStatus.includes('HPV vaccine'),
+      medications.includes('Birth control'),
+      currentConditions.includes('HPV')
+    ].filter(Boolean).length;
+
     recommendations.push({
       id: 'preventive_3',
       name: 'Cervical Cancer Screening',
       description: 'Regular smear test to detect early changes in cervical cells.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Essential for early detection and prevention of cervical cancer.',
-      matchScore: 98,
+      reason: cervicalRiskFactors > 0 ? 'Risk factors detected - regular screening is crucial.' : 'Essential for early detection and prevention of cervical cancer.',
+      matchScore: cervicalRiskFactors > 0 ? 98 : 92,
       provider: 'GP Surgery or Sexual Health Clinic',
       category: 'screening',
       urgency: 'high',
-      frequency: 'Every 3-5 years',
+      frequency: cervicalRiskFactors > 0 ? 'Every 3 years' : 'Every 3-5 years',
       ageRelevant: true,
-      personalizedReason: 'Regular cervical screening can prevent up to 75% of cervical cancers.',
+      personalizedReason: cervicalRiskFactors > 0
+        ? 'With identified risk factors, regular screening is especially important for early detection.'
+        : 'Regular cervical screening can prevent up to 75% of cervical cancers.',
       localAvailability: location ? `GP surgeries and clinics in ${location.city}` : 'Available at GP surgeries'
     });
   }
 
   if (gender === 'female' && age && age >= 50) {
+    const breastCancerRisk = familyHistory.includes('breast cancer') || familyHistory.includes('ovarian cancer');
+    
     recommendations.push({
       id: 'preventive_4',
       name: 'Mammography Screening',
       description: 'Breast cancer screening using low-dose X-rays.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Breast cancer risk increases with age, screening saves lives.',
-      matchScore: 92,
+      reason: breastCancerRisk ? 'Family history significantly increases breast cancer risk.' : 'Breast cancer risk increases with age, screening saves lives.',
+      matchScore: breastCancerRisk ? 98 : 88,
       provider: 'NHS Breast Screening Programme',
       category: 'screening',
       urgency: 'high',
-      frequency: 'Every 3 years',
+      frequency: breastCancerRisk ? 'Annually' : 'Every 3 years',
       ageRelevant: true,
-      personalizedReason: 'Regular mammograms can detect breast cancer up to 2 years before you or your doctor can feel a lump.',
+      personalizedReason: breastCancerRisk
+        ? 'With family history of breast/ovarian cancer, annual screening is recommended for early detection.'
+        : 'Regular mammograms can detect breast cancer up to 2 years before you or your doctor can feel a lump.',
       localAvailability: location ? `NHS screening units in ${location.city}` : 'NHS screening units'
     });
   }
 
-  // Family history-based recommendations
-  if (familyHistory.includes('diabetes')) {
+  // Mental health screening based on profile
+  if (socialEngagement === 'isolated' || healthData?.mentalHealthHistory?.includes('depression') || healthData?.stressLevels === 'high') {
     recommendations.push({
-      id: 'preventive_5',
-      name: 'Diabetes Screening',
-      description: 'HbA1c test to check for diabetes or pre-diabetes.',
+      id: 'preventive_mental',
+      name: 'Mental Health Assessment',
+      description: 'Comprehensive mental health screening and support planning.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Family history of diabetes increases your risk significantly.',
-      matchScore: 88,
-      provider: 'GP Surgery',
+      reason: socialEngagement === 'isolated' ? 'Social isolation can significantly impact mental health.' : 'Your stress levels or mental health history indicate potential benefit from professional support.',
+      matchScore: 90,
+      provider: 'GP Surgery or Mental Health Service',
       category: 'screening',
       urgency: 'medium',
-      frequency: 'Every 2 years',
+      frequency: 'As needed',
       ageRelevant: false,
-      personalizedReason: 'With family history of diabetes, early detection allows for lifestyle interventions that can prevent or delay onset.',
-      localAvailability: location ? `GP surgeries in ${location.city}` : 'Available at GP surgeries'
+      personalizedReason: socialEngagement === 'isolated' 
+        ? 'Building social connections and addressing isolation can significantly improve both mental and physical health.'
+        : 'Regular mental health check-ins can help maintain wellbeing and catch issues early.',
+      localAvailability: location ? `Mental health services in ${location.city}` : 'Mental health services available'
     });
   }
 
   // Vaccination recommendations
   if (!vaccinationStatus.includes('Annual flu vaccine')) {
+    const fluRisk = age && age >= 65 || currentConditions.length > 0 || healthData?.exerciseFrequency === 'never';
+    
     recommendations.push({
       id: 'preventive_6',
       name: 'Annual Flu Vaccination',
       description: 'Yearly influenza vaccine to protect against seasonal flu.',
       imageUrl: 'https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Annual flu vaccination reduces risk of influenza and complications.',
-      matchScore: 85,
+      reason: fluRisk ? 'You are at higher risk for flu complications.' : 'Annual flu vaccination reduces risk of influenza and complications.',
+      matchScore: fluRisk ? 95 : 80,
       provider: 'GP Surgery or Pharmacy',
       category: 'vaccination',
-      urgency: 'medium',
+      urgency: fluRisk ? 'high' : 'medium',
       frequency: 'Annually',
       ageRelevant: false,
-      personalizedReason: 'Flu vaccination is especially important for maintaining good health and preventing serious complications.',
+      personalizedReason: fluRisk
+        ? 'Given your age or health conditions, flu vaccination is crucial for preventing serious complications.'
+        : 'Flu vaccination is especially important for maintaining good health and preventing serious complications.',
       localAvailability: location ? `GP surgeries and pharmacies in ${location.city}` : 'Available at GP surgeries and pharmacies'
     });
   }
@@ -241,99 +294,154 @@ const generateLifestyleAdvice = (
     exerciseFrequency, 
     alcoholConsumption, 
     smokingHabits,
-    currentSymptoms 
+    currentSymptoms,
+    medicalConditions
   } = userProfile.healthData;
+  
+  const { age, socialEngagement } = userProfile;
 
   // Sleep recommendations
   if (sleepPatterns === 'poor' || sleepPatterns === 'fair') {
+    const sleepIssuesSeverity = sleepPatterns === 'poor' ? 'severe' : 'moderate';
+    const hasStressRelatedSleep = stressLevels === 'high' || stressLevels === 'chronic';
+    
     recommendations.push({
       id: 'lifestyle_1',
-      name: 'Sleep Hygiene Program',
-      description: 'Comprehensive approach to improving sleep quality and duration.',
+      name: hasStressRelatedSleep ? 'Stress & Sleep Management Program' : 'Sleep Hygiene Program',
+      description: hasStressRelatedSleep ? 'Integrated approach addressing stress-related sleep issues.' : 'Comprehensive approach to improving sleep quality and duration.',
       imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Poor sleep affects immune function, mental health, and overall wellbeing.',
-      matchScore: 94,
+      reason: hasStressRelatedSleep ? 'Stress and poor sleep create a cycle that affects both physical and mental health.' : 'Poor sleep affects immune function, mental health, and overall wellbeing.',
+      matchScore: sleepPatterns === 'poor' ? 96 : 88,
       category: 'sleep',
-      difficulty: 'easy',
-      timeCommitment: '30 minutes daily',
-      benefits: ['Better mood', 'Improved concentration', 'Stronger immune system', 'Better weight management'],
-      personalizedReason: 'Your current sleep patterns indicate room for improvement that could significantly impact your health.',
+      difficulty: hasStressRelatedSleep ? 'medium' : 'easy',
+      timeCommitment: hasStressRelatedSleep ? '45 minutes daily' : '30 minutes daily',
+      benefits: hasStressRelatedSleep 
+        ? ['Reduced anxiety', 'Better sleep quality', 'Improved stress resilience', 'Better mood stability']
+        : ['Better mood', 'Improved concentration', 'Stronger immune system', 'Better weight management'],
+      personalizedReason: hasStressRelatedSleep
+        ? `Your ${sleepPatterns} sleep combined with ${stressLevels} stress levels suggests an integrated approach would be most effective.`
+        : `Your ${sleepPatterns} sleep patterns indicate room for improvement that could significantly impact your health.`,
       localAvailability: location ? `Sleep clinics available in ${location.city}` : 'Sleep clinics and online resources available'
     });
   }
 
   // Stress management
   if (stressLevels === 'high' || stressLevels === 'chronic') {
+    const isChronicStress = stressLevels === 'chronic';
+    const hasAnxiety = medicalConditions?.includes('Anxiety');
+    
     recommendations.push({
       id: 'lifestyle_2',
-      name: 'Mindfulness-Based Stress Reduction',
-      description: 'Evidence-based program combining meditation, yoga, and mindfulness.',
+      name: isChronicStress ? 'Comprehensive Stress Management Program' : 'Mindfulness-Based Stress Reduction',
+      description: isChronicStress ? 'Multi-modal approach for chronic stress including therapy, mindfulness, and lifestyle changes.' : 'Evidence-based program combining meditation, yoga, and mindfulness.',
       imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Chronic stress contributes to numerous health problems including heart disease.',
-      matchScore: 91,
+      reason: isChronicStress ? 'Chronic stress requires comprehensive intervention to prevent serious health complications.' : 'High stress levels can lead to physical and mental health problems.',
+      matchScore: isChronicStress ? 95 : 88,
       category: 'stress',
-      difficulty: 'medium',
-      timeCommitment: '20-30 minutes daily',
-      benefits: ['Reduced anxiety', 'Lower blood pressure', 'Better sleep', 'Improved focus'],
-      personalizedReason: 'Your high stress levels could be impacting your physical and mental health significantly.',
+      difficulty: isChronicStress ? 'hard' : 'medium',
+      timeCommitment: isChronicStress ? '60 minutes daily' : '20-30 minutes daily',
+      benefits: isChronicStress 
+        ? ['Significant anxiety reduction', 'Improved coping skills', 'Better relationships', 'Reduced health risks']
+        : ['Reduced anxiety', 'Lower blood pressure', 'Better sleep', 'Improved focus'],
+      personalizedReason: hasAnxiety
+        ? `Your ${stressLevels} stress levels combined with anxiety diagnosis require specialized stress management techniques.`
+        : `Your ${stressLevels} stress levels could be impacting your physical and mental health significantly.`,
       localAvailability: location ? `MBSR classes available in ${location.city}` : 'MBSR classes and apps available'
     });
   }
 
   // Exercise recommendations
   if (exerciseFrequency === 'rarely' || exerciseFrequency === 'never') {
+    const hasHealthConditions = medicalConditions && medicalConditions.length > 0;
+    const isOlderAdult = age && age >= 65;
+    
     recommendations.push({
       id: 'lifestyle_3',
-      name: 'Beginner Fitness Program',
-      description: 'Gentle introduction to regular physical activity with progressive goals.',
+      name: hasHealthConditions || isOlderAdult ? 'Medically-Supervised Exercise Program' : 'Beginner Fitness Program',
+      description: hasHealthConditions || isOlderAdult ? 'Safe, supervised exercise program tailored to your health conditions.' : 'Gentle introduction to regular physical activity with progressive goals.',
       imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Regular exercise is one of the most effective ways to improve overall health.',
-      matchScore: 89,
+      reason: hasHealthConditions ? 'Exercise can help manage your health conditions when done safely.' : 'Regular exercise is one of the most effective ways to improve overall health.',
+      matchScore: hasHealthConditions || isOlderAdult ? 92 : 85,
       category: 'exercise',
-      difficulty: 'easy',
-      timeCommitment: '30 minutes, 3x per week',
-      benefits: ['Improved cardiovascular health', 'Better mood', 'Stronger bones', 'Weight management'],
-      personalizedReason: 'Starting a gentle exercise routine could provide significant health benefits with minimal time investment.',
+      difficulty: hasHealthConditions || isOlderAdult ? 'medium' : 'easy',
+      timeCommitment: hasHealthConditions || isOlderAdult ? '20 minutes, 3x per week' : '30 minutes, 3x per week',
+      benefits: hasHealthConditions 
+        ? ['Better condition management', 'Improved energy', 'Reduced symptoms', 'Enhanced quality of life']
+        : ['Improved cardiovascular health', 'Better mood', 'Stronger bones', 'Weight management'],
+      personalizedReason: hasHealthConditions
+        ? `With your health conditions (${medicalConditions?.slice(0, 2).join(', ')}), supervised exercise can significantly improve your symptoms and overall health.`
+        : 'Starting a gentle exercise routine could provide significant health benefits with minimal time investment.',
       localAvailability: location ? `Gyms and fitness centers in ${location.city}` : 'Local gyms and online programs available'
     });
   }
 
   // Smoking cessation
   if (smokingHabits === 'regular' || smokingHabits === 'heavy') {
+    const isHeavySmoker = smokingHabits === 'heavy';
+    const hasRespiratoryConditions = medicalConditions?.includes('Asthma') || medicalConditions?.includes('COPD');
+    
     recommendations.push({
       id: 'lifestyle_4',
-      name: 'Smoking Cessation Program',
-      description: 'Comprehensive support including counseling and nicotine replacement therapy.',
+      name: isHeavySmoker ? 'Intensive Smoking Cessation Program' : 'Smoking Cessation Program',
+      description: isHeavySmoker ? 'Intensive support with medical supervision, counseling, and multiple quit strategies.' : 'Comprehensive support including counseling and nicotine replacement therapy.',
       imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Quitting smoking is the single most important thing you can do for your health.',
+      reason: hasRespiratoryConditions ? 'Smoking is severely worsening your respiratory condition.' : 'Quitting smoking is the single most important thing you can do for your health.',
       matchScore: 98,
       category: 'habits',
       difficulty: 'hard',
-      timeCommitment: 'Ongoing support',
-      benefits: ['Reduced cancer risk', 'Better lung function', 'Improved circulation', 'Save money'],
-      personalizedReason: 'Quitting smoking will dramatically reduce your risk of cancer, heart disease, and numerous other conditions.',
+      timeCommitment: isHeavySmoker ? 'Daily support for 6+ months' : 'Ongoing support',
+      benefits: hasRespiratoryConditions 
+        ? ['Immediate breathing improvement', 'Reduced medication needs', 'Slower disease progression', 'Better quality of life']
+        : ['Reduced cancer risk', 'Better lung function', 'Improved circulation', 'Save money'],
+      personalizedReason: hasRespiratoryConditions
+        ? `With your respiratory condition, quitting smoking is critical to prevent further lung damage and improve your breathing.`
+        : `As a ${smokingHabits} smoker, quitting will dramatically reduce your risk of cancer, heart disease, and numerous other conditions.`,
       localAvailability: location ? `NHS stop smoking services in ${location.city}` : 'NHS stop smoking services available'
     });
   }
 
   // Alcohol moderation
   if (alcoholConsumption === 'heavy' || alcoholConsumption === 'excessive') {
+    const isExcessiveDrinker = alcoholConsumption === 'excessive';
+    const hasLiverConditions = medicalConditions?.includes('Liver disease');
+    
     recommendations.push({
       id: 'lifestyle_5',
-      name: 'Alcohol Reduction Program',
-      description: 'Support and strategies for reducing alcohol consumption to healthy levels.',
+      name: isExcessiveDrinker ? 'Alcohol Dependency Treatment Program' : 'Alcohol Reduction Program',
+      description: isExcessiveDrinker ? 'Comprehensive treatment including medical supervision, counseling, and peer support.' : 'Support and strategies for reducing alcohol consumption to healthy levels.',
       imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
-      reason: 'Excessive alcohol consumption increases risk of liver disease, cancer, and other conditions.',
-      matchScore: 87,
+      reason: hasLiverConditions ? 'Alcohol is directly damaging your liver and must be addressed immediately.' : 'Excessive alcohol consumption increases risk of liver disease, cancer, and other conditions.',
+      matchScore: hasLiverConditions ? 98 : 90,
       category: 'habits',
-      difficulty: 'medium',
-      timeCommitment: 'Weekly sessions',
-      benefits: ['Better liver health', 'Improved sleep', 'Weight loss', 'Better mental clarity'],
-      personalizedReason: 'Reducing alcohol consumption could significantly improve your liver health and overall wellbeing.',
+      difficulty: isExcessiveDrinker ? 'hard' : 'medium',
+      timeCommitment: isExcessiveDrinker ? 'Daily support initially' : 'Weekly sessions',
+      benefits: hasLiverConditions 
+        ? ['Prevent further liver damage', 'Improved liver function', 'Reduced health risks', 'Better medication effectiveness']
+        : ['Better liver health', 'Improved sleep', 'Weight loss', 'Better mental clarity'],
+      personalizedReason: hasLiverConditions
+        ? 'With liver conditions, reducing alcohol consumption is critical to prevent further damage and allow healing.'
+        : `Your ${alcoholConsumption} alcohol consumption could significantly impact your liver health and overall wellbeing.`,
       localAvailability: location ? `Alcohol support services in ${location.city}` : 'Alcohol support services available'
     });
   }
 
+  // Social connection recommendations for isolated users
+  if (socialEngagement === 'isolated') {
+    recommendations.push({
+      id: 'lifestyle_social',
+      name: 'Social Connection Building Program',
+      description: 'Structured activities and support to build meaningful social connections.',
+      imageUrl: 'https://images.pexels.com/photos/3771069/pexels-photo-3771069.jpeg?auto=compress&cs=tinysrgb&w=400',
+      reason: 'Social isolation increases mortality risk equivalent to smoking 15 cigarettes daily.',
+      matchScore: 94,
+      category: 'stress',
+      difficulty: 'medium',
+      timeCommitment: '2-3 activities per week',
+      benefits: ['Reduced depression risk', 'Better immune function', 'Increased longevity', 'Improved cognitive health'],
+      personalizedReason: 'Building social connections can significantly improve both your mental and physical health outcomes.',
+      localAvailability: location ? `Community groups and activities in ${location.city}` : 'Community groups and online activities available'
+    });
+  }
   return recommendations;
 };
 
