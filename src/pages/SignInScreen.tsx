@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, LogIn, User, Users, Briefcase } from "lucide-react";
-import { supabase } from "../lib/supabase";
 
 export default function SignInScreen() {
   const navigate = useNavigate();
@@ -22,35 +21,19 @@ export default function SignInScreen() {
     setError('');
     
     try {
-      // Try Supabase auth first
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const success = await login(email, password);
       
-      if (error) {
-        // Fall back to test user login
-        const success = await login(email, password);
-        if (!success) {
-          setError('Invalid email or password. Please try again.');
-          setIsLoading(false);
-          return;
-        }
+      if (!success) {
+        setError('Invalid email or password. Please try again.');
+        setIsLoading(false);
+        return;
       }
       
-      // Get user data
-      const user = data?.user || testUsers.find(u => u.email === email);
-      
-      if (user) {
-        // Navigate based on user type
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('type, service_areas')
-          .eq('id', user.id)
-          .single();
-        
-        const userType = profileData?.type || user.type;
-        const serviceAreas = profileData?.service_areas || user.serviceAreas;
+      // The user object from useAuth will now be populated after successful login
+      // Use the user object from AuthContext directly for navigation logic
+      if (authUser) { // 'authUser' here is the state from AuthContext
+        const userType = authUser.role; // Assuming 'role' is available on the user object from AuthContext
+        const serviceAreas = authUser.serviceAreas; // Assuming 'serviceAreas' is available
         
         if (userType === 'provider') {
           navigate('/provider-dashboard');
@@ -63,6 +46,8 @@ export default function SignInScreen() {
             navigate('/maihome');
           } else if (firstService === 'MaiStyle') {
             navigate('/maistyle');
+          } else if (firstService === 'MaiMoney') {
+            navigate('/maimoney');
           } else {
             navigate('/maihome'); // Default
           }

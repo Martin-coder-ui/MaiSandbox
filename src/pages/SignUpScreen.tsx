@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function SignUpScreen() {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,6 +13,7 @@ export default function SignUpScreen() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [generalError, setGeneralError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -26,6 +28,9 @@ export default function SignUpScreen() {
         ...prev,
         [name]: ''
       }));
+    }
+    if (generalError) {
+      setGeneralError('');
     }
   };
 
@@ -64,49 +69,22 @@ export default function SignUpScreen() {
     }
     
     setIsLoading(true);
-    setError('');
+    setGeneralError('');
     
     try {
-      // Create user in Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.name
-          }
-        }
-      });
+      const success = await signUp(formData.email, formData.password, formData.name);
       
-      if (error) {
-        throw error;
-      }
-      
-      // Create profile in profiles table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: data.user.id,
-              name: formData.name,
-              email: formData.email,
-              type: 'client',
-              service_areas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'],
-              social_engagement: 'moderate'
-            }
-          ]);
-        
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
+      if (!success) {
+        setGeneralError('Failed to create account. Please check your details or try again later.');
+        setIsLoading(false);
+        return;
       }
       
       // Navigate to the personal details form after successful sign-up
       setIsLoading(false);
       navigate('/start');
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign up. Please try again.');
+      setGeneralError(err.message || 'An unexpected error occurred during sign up. Please try again.');
       setIsLoading(false);
     }
   };
@@ -116,6 +94,12 @@ export default function SignUpScreen() {
       <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Create Your Mai Account</h1>
       <p className="mb-6 text-gray-600 dark:text-gray-300">Join and begin your transformation journey.</p>
       
+      {generalError && (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg animate-fade-in">
+          <p className="text-red-600 text-sm mt-1">{generalError}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
