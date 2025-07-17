@@ -1,9 +1,8 @@
-```typescript
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase"; // Corrected import path
+import { supabase } from "../lib/supabase";
 
 export function useProfile() {
-  const [profile, setProfile] = useState<any>(null); // Use 'any' or define a more specific type for profile
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
@@ -42,4 +41,3 @@ export function useProfile() {
 
   return { profile, loading };
 }
-```
