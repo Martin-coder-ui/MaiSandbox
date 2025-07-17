@@ -135,37 +135,54 @@ export const useMaiSocial = (user?: User | null) => {
         throw new Error('User not authenticated');
       }
       
-      // 1. Create the post
-      const post = await socialApi.createPost(
-        content,
-        user.id,
-        vertical || 'MaiHome',
-        achievement?.id
-      );
+      // 1. Upload media files first if any
+      let mediaUrls: { type: string; url: string; thumbnail?: string }[] = [];
       
-      // 2. Upload media files if any
-      if (media && media.length > 0 && post) {
+      if (media && media.length > 0) {
         for (const file of media) {
           const isVideo = file.type.startsWith('video/');
           const mediaType = isVideo ? 'video' : 'image';
           
-          // Upload the file to Supabase Storage
-          const fileUrl = await socialApi.uploadMedia(file, mediaType === 'video' ? 'videos' : 'images');
-          
-          // For videos, we might want to generate a thumbnail
-          let thumbnailUrl;
-          if (isVideo) {
-            // In a real app, you would generate a thumbnail from the video
-            // For now, we'll use a placeholder
-            thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+          try {
+            // Upload the file to Supabase Storage
+            const fileUrl = await socialApi.uploadMedia(file, mediaType === 'video' ? 'videos' : 'images');
+            
+            // For videos, we might want to generate a thumbnail
+            let thumbnailUrl;
+            if (isVideo) {
+              // In a real app, you would generate a thumbnail from the video
+              // For now, we'll use a placeholder
+              thumbnailUrl = 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800';
+            }
+            
+            mediaUrls.push({
+              type: mediaType,
+              url: fileUrl,
+              thumbnail: thumbnailUrl
+            });
+          } catch (uploadError) {
+            console.error('Error uploading media:', uploadError);
+            // Continue with other files if one fails
           }
-          
-          // Add the media to the post
-          await socialApi.addPostMedia(post.id, mediaType, fileUrl, thumbnailUrl);
         }
       }
       
-      // 3. Add tags if any
+      // 2. Create the post
+      const post = await socialApi.createPost(
+        content,
+        user.id,
+        vertical || 'MaiHealth',
+        achievement?.id
+      );
+      
+      // 3. Add media to the post if any were uploaded
+      if (mediaUrls.length > 0 && post) {
+        for (const mediaItem of mediaUrls) {
+          await socialApi.addPostMedia(post.id, mediaItem.type as 'image' | 'video', mediaItem.url, mediaItem.thumbnail);
+        }
+      }
+      
+      // 4. Add tags if any
       if (tags && tags.length > 0 && post) {
         for (const tagName of tags) {
           // Check if tag exists, create if not
@@ -189,7 +206,7 @@ export const useMaiSocial = (user?: User | null) => {
         }
       }
       
-      // 4. Refresh posts to include the new one
+      // 5. Refresh posts to include the new one
       await fetchPosts();
       
       return { success: true, postId: post?.id };
@@ -198,6 +215,92 @@ export const useMaiSocial = (user?: User | null) => {
       console.error('Error creating post:', err);
       setLoading(false);
       return { success: false, error: 'Failed to create post' };
+    }
+  };
+
+  // Enhanced createPost function that accepts structured data
+  const createPostFromModal = async (postData: {
+    content: string;
+    media?: { type: string; url: string; thumbnail?: string }[];
+    tags: string[];
+    vertical: string;
+    achievement?: { title: string; description: string; icon: string };
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      // 1. Create achievement if provided
+      let achievementId;
+      if (postData.achievement) {
+        const newAchievement = await socialApi.createAchievement(
+          user.id,
+          postData.achievement.title,
+          postData.achievement.description,
+          postData.achievement.icon,
+          postData.vertical as 'MaiHealth' | 'MaiMoney' | 'MaiStyle' | 'MaiHome'
+        );
+        achievementId = newAchievement.id;
+      }
+      
+      // 2. Create the post
+      const post = await socialApi.createPost(
+        postData.content,
+        user.id,
+        postData.vertical,
+        achievementId
+      );
+      
+      // 3. Add media if any
+      if (postData.media && postData.media.length > 0 && post) {
+        for (const mediaItem of postData.media) {
+          await socialApi.addPostMedia(
+            post.id, 
+            mediaItem.type as 'image' | 'video', 
+            mediaItem.url, 
+            mediaItem.thumbnail
+          );
+        }
+      }
+      
+      // 4. Add tags if any
+      if (postData.tags && postData.tags.length > 0 && post) {
+        for (const tagName of postData.tags) {
+          // Check if tag exists, create if not
+          let tag;
+          const { data: existingTags } = await supabase
+            .from('social_tags')
+            .select('*')
+            .eq('name', tagName)
+            .limit(1);
+          
+          if (existingTags && existingTags.length > 0) {
+            tag = existingTags[0];
+          } else {
+            tag = await socialApi.createTag(tagName);
+          }
+          
+          // Add tag to post
+          if (tag) {
+            await socialApi.addTagToPost(post.id, tag.id);
+          }
+        }
+      }
+      
+      // 5. Refresh posts to include the new one
+      await fetchPosts();
+      
+      return { success: true, postId: post?.id };
+    } catch (err) {
+      setError('Failed to create post');
+      console.error('Error creating post:', err);
+      return { success: false, error: 'Failed to create post' };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -571,6 +674,7 @@ export const useMaiSocial = (user?: User | null) => {
     uploadProgress,
     fetchPosts,
     createPost,
+    createPostFromModal,
     uploadVideo,
     likePost,
     savePost,

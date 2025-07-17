@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useProfile } from "../hooks/useProfile";
 import { useGeolocation } from "../hooks/useGeolocation";
+import { useMaiSocial } from "../hooks/useMaiSocial";
+import CreatePostModal from "../components/CreatePostModal";
 import { 
   MessageSquare, 
   Heart, 
@@ -30,249 +32,18 @@ export default function MaiSocialScreen() {
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { location } = useGeolocation();
+  const { posts, loading, createPostFromModal, likePost, savePost, addComment, sharePost } = useMaiSocial(user);
   const [activeTab, setActiveTab] = useState<'feed' | 'discover' | 'saved'>('feed');
   const [activeFilter, setActiveFilter] = useState<'all' | 'health' | 'money' | 'style' | 'home'>('all');
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   
-  // Sample posts data - in a real app, this would come from an API
-  const posts = [
-    {
-      id: 'post1',
-      user: {
-        id: 'user1',
-        name: 'Emma Thompson',
-        avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: true,
-        type: 'client',
-        badge: 'MaiHealth'
-      },
-      content: "Just completed my 30-day fitness challenge! My health score is up by 15 points and I'm feeling amazing. Thanks to Dr. Sarah for the personalized exercise plan that worked with my schedule.",
-      media: [
-        {
-          type: 'image',
-          url: 'https://images.pexels.com/photos/4498362/pexels-photo-4498362.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 42,
-        comments: 8,
-        shares: 3
-      },
-      timestamp: '2 hours ago',
-      tags: ['fitness', 'health', 'achievement'],
-      vertical: 'MaiHealth',
-      achievement: {
-        title: 'Fitness Milestone',
-        description: '+15 Health Score',
-        icon: 'award'
-      },
-      liked: false
-    },
-    {
-      id: 'post2',
-      user: {
-        id: 'provider1',
-        name: 'Dr. Sarah Johnson',
-        avatar: 'https://images.pexels.com/photos/5327585/pexels-photo-5327585.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: true,
-        type: 'provider',
-        badge: 'Physiotherapist'
-      },
-      content: "Here's a quick video guide on proper stretching techniques for lower back pain. These exercises are perfect for anyone who sits at a desk all day. Remember to move slowly and never push through pain!",
-      media: [
-        {
-          type: 'video',
-          url: 'https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f62a23f12c45a9e696a6f31faa46a38274&profile_id=139&oauth2_token_id=57447761',
-          thumbnail: 'https://images.pexels.com/photos/4498404/pexels-photo-4498404.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 87,
-        comments: 23,
-        shares: 15
-      },
-      timestamp: '1 day ago',
-      tags: ['backpain', 'stretching', 'physiotherapy'],
-      vertical: 'MaiHealth',
-      liked: true
-    },
-    {
-      id: 'post3',
-      user: {
-        id: 'user2',
-        name: 'James Wilson',
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: false,
-        type: 'client',
-        badge: 'MaiMoney'
-      },
-      content: "Just hit my emergency fund goal of £10,000! 🎉 It took 8 months of consistent saving and some smart budget adjustments suggested by MaiMoney. Now moving on to my house deposit goal!",
-      media: [
-        {
-          type: 'image',
-          url: 'https://images.pexels.com/photos/47344/dollar-currency-money-us-dollar-47344.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 56,
-        comments: 12,
-        shares: 4
-      },
-      timestamp: '3 days ago',
-      tags: ['savings', 'finance', 'goals'],
-      vertical: 'MaiMoney',
-      achievement: {
-        title: 'Savings Goal Reached',
-        description: '£10,000 Emergency Fund',
-        icon: 'trending-up'
-      },
-      liked: false
-    },
-    {
-      id: 'post4',
-      user: {
-        id: 'provider2',
-        name: 'Lisa Rodriguez',
-        avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: true,
-        type: 'provider',
-        badge: 'Financial Advisor'
-      },
-      content: "I've created a video explaining the basics of index fund investing for beginners. This strategy has helped many of my clients build wealth consistently over time with minimal effort.",
-      media: [
-        {
-          type: 'video',
-          url: 'https://player.vimeo.com/external/552781899.sd.mp4?s=5af0d4d2a9f4a54d4c8d3ce3b3d4927c3e2a3f1d&profile_id=165&oauth2_token_id=57447761',
-          thumbnail: 'https://images.pexels.com/photos/6801874/pexels-photo-6801874.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 124,
-        comments: 31,
-        shares: 42
-      },
-      timestamp: '1 week ago',
-      tags: ['investing', 'finance', 'education'],
-      vertical: 'MaiMoney',
-      liked: false
-    },
-    {
-      id: 'post5',
-      user: {
-        id: 'user3',
-        name: 'Sophie Chen',
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: false,
-        type: 'client',
-        badge: 'MaiStyle'
-      },
-      content: "My style score is now 92%! 🎉 The capsule wardrobe recommendations from MaiStyle have completely transformed my closet. Fewer pieces but so many more outfit combinations!",
-      media: [
-        {
-          type: 'image',
-          url: 'https://images.pexels.com/photos/5705506/pexels-photo-5705506.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 78,
-        comments: 14,
-        shares: 6
-      },
-      timestamp: '2 days ago',
-      tags: ['fashion', 'style', 'capsulewardrobe'],
-      vertical: 'MaiStyle',
-      achievement: {
-        title: 'Style Transformation',
-        description: '92% Style Score',
-        icon: 'sparkles'
-      },
-      liked: true
-    },
-    {
-      id: 'post6',
-      user: {
-        id: 'provider3',
-        name: 'Maria Santos',
-        avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: true,
-        type: 'provider',
-        badge: 'Personal Stylist'
-      },
-      content: "Check out this video on how to style one dress in 5 different ways! Perfect for travel or minimalist wardrobes. Which look is your favorite?",
-      media: [
-        {
-          type: 'video',
-          url: 'https://player.vimeo.com/external/517090081.sd.mp4?s=ce51c3c1b8a39b407f335568a9c93c3ad33c8336&profile_id=165&oauth2_token_id=57447761',
-          thumbnail: 'https://images.pexels.com/photos/7691441/pexels-photo-7691441.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 103,
-        comments: 27,
-        shares: 19
-      },
-      timestamp: '5 days ago',
-      tags: ['fashion', 'styling', 'minimalism'],
-      vertical: 'MaiStyle',
-      liked: false
-    },
-    {
-      id: 'post7',
-      user: {
-        id: 'user4',
-        name: 'David Parker',
-        avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150',
-        isVerified: false,
-        type: 'client',
-        badge: 'MaiHome'
-      },
-      content: "Just finished setting up my smart home system with MaiHome's recommendations. Energy usage is down 22% and the automation routines are a game-changer! Here's a video tour of the setup.",
-      media: [
-        {
-          type: 'video',
-          url: 'https://player.vimeo.com/external/477260959.sd.mp4?s=c3c2df2c921f51783a3b84579eca9ed7e6f9208d&profile_id=165&oauth2_token_id=57447761',
-          thumbnail: 'https://images.pexels.com/photos/3952034/pexels-photo-3952034.jpeg?auto=compress&cs=tinysrgb&w=800'
-        }
-      ],
-      stats: {
-        likes: 64,
-        comments: 18,
-        shares: 7
-      },
-      timestamp: '1 week ago',
-      tags: ['smarthome', 'automation', 'energy'],
-      vertical: 'MaiHome',
-      achievement: {
-        title: 'Energy Efficiency',
-        description: '22% Reduction',
-        icon: 'zap'
-      },
-      liked: false
-    }
-  ];
-
-  const handleLike = (postId: string) => {
-    // In a real app, this would call an API to like/unlike the post
-    console.log(`Liked post ${postId}`);
-  };
-
-  const handleComment = (postId: string) => {
-    // In a real app, this would open a comment modal or focus a comment input
-    console.log(`Comment on post ${postId}`);
-  };
-
-  const handleShare = (postId: string) => {
-    // In a real app, this would open a share modal
-    console.log(`Share post ${postId}`);
-  };
-
-  const handleSave = (postId: string) => {
-    // In a real app, this would call an API to save/unsave the post
-    console.log(`Saved post ${postId}`);
+  const handleCreatePost = async (postData: any) => {
+    return await createPostFromModal(postData);
   };
 
   const handleVideoClick = (videoUrl: string) => {
@@ -444,6 +215,8 @@ export default function MaiSocialScreen() {
                 <input 
                   type="text" 
                   placeholder={isProvider ? "Share tips, insights, or client success stories..." : "What's on your mind?"} 
+                  onClick={() => setShowCreateModal(true)}
+                  readOnly
                   className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -807,21 +580,21 @@ export default function MaiSocialScreen() {
                   </button>
                   <button 
                     onClick={() => handleComment(post.id)}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  onClick={() => addComment(post.id, 'Great post!')}
                   >
                     <MessageSquare className="w-5 h-5" />
                     <span>Comment</span>
                   </button>
                   <button 
                     onClick={() => handleShare(post.id)}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  onClick={() => sharePost(post.id)}
                   >
                     <Share2 className="w-5 h-5" />
                     <span>Share</span>
                   </button>
                   <button 
                     onClick={() => handleSave(post.id)}
-                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  onClick={() => savePost(post.id)}
                   >
                     <Bookmark className="w-5 h-5" />
                     <span>Save</span>
@@ -832,6 +605,13 @@ export default function MaiSocialScreen() {
           </div>
         </div>
       </div>
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreatePost}
+      />
 
       {/* Video Modal */}
       {showVideoModal && currentVideo && (
