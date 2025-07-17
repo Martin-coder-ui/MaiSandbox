@@ -434,53 +434,61 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (stylePreference === 'bohemian') {
+          const { budget, lifestyle } = userProfile.styleData;
+          const isCreativeLifestyle = lifestyle === 'creative';
+          const lovesTravel = userProfile.interests?.includes('Travel');
+          
           newRecommendations.clothing.push(
             {
               id: 'c_boh1',
-              name: 'Flowy Maxi Dress',
-              description: 'Comfortable and free-spirited with beautiful prints.',
+              name: lovesTravel ? 'Travel-Friendly Maxi Dress' : 'Flowy Maxi Dress',
+              description: lovesTravel ? 'Wrinkle-resistant fabric perfect for travel adventures with bohemian flair.' : 'Comfortable and free-spirited with beautiful prints.',
               imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Embraces the bohemian style with natural fabrics and relaxed silhouettes.',
-              styleMatch: 90,
+              reason: isCreativeLifestyle ? 'Perfect for your creative lifestyle with artistic bohemian elements.' : 'Embraces the bohemian style with natural fabrics and relaxed silhouettes.',
+              styleMatch: lovesTravel ? 94 : 87,
               category: 'dresses',
               season: 'summer',
-              supplier: 'Free People'
+              supplier: lovesTravel ? 'Reformation' : 'Free People'
             },
             {
               id: 'c_boh2',
-              name: 'Embroidered Kimono',
-              description: 'Perfect layering piece with artistic details.',
+              name: isCreativeLifestyle ? 'Artist-Designed Kimono' : 'Embroidered Kimono',
+              description: isCreativeLifestyle ? 'Unique artistic piece that reflects your creative spirit.' : 'Perfect layering piece with artistic details.',
               imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Adds texture and visual interest typical of bohemian style.',
-              styleMatch: 88,
+              reason: isCreativeLifestyle ? 'Expresses your artistic nature while maintaining bohemian aesthetic.' : 'Adds texture and visual interest typical of bohemian style.',
+              styleMatch: isCreativeLifestyle ? 93 : 85,
               category: 'outerwear',
               season: 'spring',
-              supplier: 'Anthropologie'
+              supplier: isCreativeLifestyle ? 'Local Artisan Markets' : 'Anthropologie'
             }
           );
         } else if (stylePreference === 'classic' || stylePreference === 'classic-modern') {
+          const { budget, lifestyle } = userProfile.styleData;
+          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
+          const isHighBudget = budget === 'over-2000';
+          
           newRecommendations.clothing.push(
             {
               id: 'c_cla1',
-              name: 'Navy Blazer',
-              description: 'Timeless piece that elevates any outfit.',
+              name: isHighBudget ? 'Savile Row Tailored Navy Blazer' : 'Navy Blazer',
+              description: isHighBudget ? 'Bespoke tailoring with finest materials for the ultimate classic piece.' : 'Timeless piece that elevates any outfit.',
               imageUrl: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Essential for classic style, versatile and always appropriate.',
-              styleMatch: 94,
+              reason: isProfessional ? 'Essential for your professional wardrobe and classic style preference.' : 'Essential for classic style, versatile and always appropriate.',
+              styleMatch: isProfessional ? 98 : 91,
               category: 'outerwear',
               season: 'all',
-              supplier: 'Reiss'
+              supplier: isHighBudget ? 'Huntsman Savile Row' : 'Reiss'
             },
             {
               id: 'c_cla2',
-              name: 'Pencil Skirt',
-              description: 'Flattering silhouette perfect for professional settings.',
+              name: isProfessional ? 'Executive Pencil Skirt' : 'Classic Pencil Skirt',
+              description: isProfessional ? 'Professional-grade tailoring designed for executive presence.' : 'Flattering silhouette perfect for professional settings.',
               imageUrl: 'https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: 'Classic piece that creates an elegant, polished look.',
-              styleMatch: 91,
+              reason: isProfessional ? 'Essential for your professional wardrobe with classic elegance.' : 'Classic piece that creates an elegant, polished look.',
+              styleMatch: isProfessional ? 95 : 88,
               category: 'bottoms',
               season: 'all',
-              supplier: 'Whistles'
+              supplier: isProfessional ? 'Theory' : 'Whistles'
             }
           );
         } else {
@@ -528,21 +536,18 @@ export const useMaiStyleRecommendations = (
 
         // --- Hair Recommendations Based on Hair Type and Face Shape ---
         if (hairType === 'fine-straight') {
-          const { lifestyle, budget } = userProfile.styleData;
-          const isLowMaintenance = lifestyle === 'active' || lifestyle === 'casual';
-          
           newRecommendations.hair.push(
             {
               id: 'h_fine1',
-              name: isLowMaintenance ? 'Low-Maintenance Layered Bob' : 'Layered Bob with Bangs',
-              description: isLowMaintenance ? 'Easy-care cut that adds volume with minimal styling required.' : 'Adds volume and movement to fine, straight hair.',
+              name: 'Layered Bob with Bangs',
+              description: 'Adds volume and movement to fine, straight hair.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: isLowMaintenance ? 'Perfect for your active lifestyle while maximizing your hair\'s natural volume.' : 'Creates the illusion of fullness and frames the face beautifully.',
-              matchScore: isLowMaintenance ? 95 : 88,
-              difficulty: isLowMaintenance ? 'easy' : 'medium',
-              timeRequired: isLowMaintenance ? '10 minutes' : '20 minutes',
+              reason: currentSeason === 'winter' ? 'Essential warmth for winter while maintaining your minimalist aesthetic.' : 'High-quality basics are the foundation of minimalist style.',
+              matchScore: currentSeason === 'winter' ? 96 : 88,
+              difficulty: 'medium',
+              timeRequired: '20 minutes',
               supplier: location ? `Hair salons in ${location.city}` : 'Local Hair Salon',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : currentSeason === 'winter' ? 'Great for winter - adds warmth around face' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer - easy to style in heat' : undefined
             },
             {
               id: 'h_fine2',
@@ -557,21 +562,18 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (hairType === 'thick-curly' || hairType === 'thick-wavy') {
-          const { lifestyle, budget } = userProfile.styleData;
-          const isHighMaintenance = budget === 'over-2000';
-          
           newRecommendations.hair.push(
             {
               id: 'h_thick1',
-              name: isHighMaintenance ? 'Professional Curl Enhancement Treatment' : 'Long Layered Curls',
-              description: isHighMaintenance ? 'Salon treatment to enhance and define your natural curl pattern with professional products.' : 'Enhances natural curl pattern with strategic layers.',
+              name: 'Long Layered Curls',
+              description: 'Enhances natural curl pattern with strategic layers.',
               imageUrl: 'https://images.pexels.com/photos/1577920/pexels-photo-1577920.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: isHighMaintenance ? 'Professional treatment will maximize your curl potential with salon-quality results.' : 'Works with your natural texture to create beautiful, defined curls.',
-              matchScore: isHighMaintenance ? 97 : 91,
-              difficulty: isHighMaintenance ? 'easy' : 'medium',
-              timeRequired: isHighMaintenance ? '15 minutes with treatment' : '25 minutes',
+              reason: 'Works with your natural texture to create beautiful, defined curls.',
+              matchScore: 94,
+              difficulty: 'medium',
+              timeRequired: '25 minutes',
               supplier: location ? `Curl specialists in ${location.city}` : 'Curl Specialist Salon',
-              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : currentSeason === 'summer' ? 'Embrace natural texture in humid weather' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Great for winter - natural volume keeps you warm' : undefined
             }
           );
         } else {
@@ -580,21 +582,18 @@ export const useMaiStyleRecommendations = (
 
         // --- Makeup Recommendations Based on Skin Tone and Lifestyle ---
         if (skinTone === 'cool-undertones') {
-          const { lifestyle, budget } = userProfile.styleData;
-          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
-          
           newRecommendations.makeup.push(
             {
               id: 'm_cool1',
-              name: isProfessional ? 'Professional Cool-Toned Look' : 'Berry Lip and Rosy Cheeks',
-              description: isProfessional ? 'Sophisticated cool tones perfect for professional settings.' : 'Cool-toned colors that complement your complexion.',
+              name: 'Berry Lip and Rosy Cheeks',
+              description: 'Cool-toned colors that complement your complexion.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: isProfessional ? 'Cool tones enhance your complexion while maintaining professional appropriateness.' : 'Enhances the natural coolness of your complexion.',
-              matchScore: isProfessional ? 92 : 84,
-              occasion: isProfessional ? 'work' : 'everyday',
-              products: isProfessional ? ['Neutral berry lip', 'Subtle pink blush', 'Taupe eyeshadow'] : ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
+              reason: 'Enhances the natural coolness of your complexion.',
+              matchScore: 87,
+              occasion: 'everyday',
+              products: ['Berry lipstick', 'Pink blush', 'Cool-toned eyeshadow'],
               supplier: 'Charlotte Tilbury',
-              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : currentSeason === 'spring' ? 'Fresh spring colors' : undefined
+              seasonalNote: currentSeason === 'winter' ? 'Perfect winter berry tones' : undefined
             },
             {
               id: 'm_cool2',
@@ -609,21 +608,18 @@ export const useMaiStyleRecommendations = (
             }
           );
         } else if (skinTone === 'warm-undertones') {
-          const { lifestyle, budget } = userProfile.styleData;
-          const isActive = lifestyle === 'active';
-          
           newRecommendations.makeup.push(
             {
               id: 'm_warm1',
-              name: isActive ? 'Natural Warm Glow' : 'Golden Glow Look',
-              description: isActive ? 'Long-wearing warm tones perfect for active lifestyles.' : 'Warm, bronzed look that enhances your natural radiance.',
+              name: 'Golden Glow Look',
+              description: 'Warm, bronzed look that enhances your natural radiance.',
               imageUrl: 'https://images.pexels.com/photos/3373716/pexels-photo-3373716.jpeg?auto=compress&cs=tinysrgb&w=400',
-              reason: isActive ? 'Sweat-resistant warm tones that complement your active lifestyle.' : 'Warm tones complement your undertones perfectly.',
-              matchScore: isActive ? 93 : 87,
+              reason: 'Warm tones complement your undertones perfectly.',
+              matchScore: 90,
               occasion: 'everyday',
-              products: isActive ? ['Waterproof bronze eyeshadow', 'Cream peach blush', 'Tinted lip balm'] : ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
+              products: ['Bronze eyeshadow', 'Peach blush', 'Coral lipstick'],
               supplier: 'Fenty Beauty',
-              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : currentSeason === 'autumn' ? 'Warm autumn radiance' : undefined
+              seasonalNote: currentSeason === 'summer' ? 'Perfect for summer glow' : undefined
             }
           );
         } else {
@@ -632,6 +628,9 @@ export const useMaiStyleRecommendations = (
 
         // --- Jewelry Recommendations Based on Style and Metal Preference ---
         if (stylePreference === 'minimalist') {
+          const { budget, lifestyle } = userProfile.styleData;
+          const isHighBudget = budget === 'over-2000';
+          
           newRecommendations.jewelry.push(
             {
               id: 'j_min1',
@@ -684,14 +683,14 @@ export const useMaiStyleRecommendations = (
             {
               id: 'n_edgy1',
               name: 'Matte Black Nails',
-              name: lovesTravel ? 'Travel-Friendly Maxi Dress' : 'Flowy Maxi Dress',
-              description: lovesTravel ? 'Wrinkle-resistant fabric perfect for travel adventures with bohemian flair.' : 'Comfortable and free-spirited with beautiful prints.',
+              description: 'Bold and striking for an edgy aesthetic.',
+              imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
               reason: 'Reflects a strong, unconventional style.',
-              reason: isCreativeLifestyle ? 'Perfect for your creative lifestyle with artistic bohemian elements.' : 'Embraces the bohemian style with natural fabrics and relaxed silhouettes.',
-              styleMatch: lovesTravel ? 94 : 87,
+              matchScore: 90,
+              length: 'medium',
               finish: 'matte',
               maintenance: 'medium',
-              supplier: lovesTravel ? 'Reformation' : 'Free People'
+              supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon'
             },
             {
               id: 'n_edgy2',
@@ -702,43 +701,39 @@ export const useMaiStyleRecommendations = (
               matchScore: 85,
               length: 'medium',
               finish: 'glossy',
-              name: isCreativeLifestyle ? 'Artist-Designed Kimono' : 'Embroidered Kimono',
-              description: isCreativeLifestyle ? 'Unique artistic piece that reflects your creative spirit.' : 'Perfect layering piece with artistic details.',
+              maintenance: 'high',
+              supplier: location ? `Nail art specialists in ${location.city}` : 'Nail Art Specialist'
             }
-              reason: isCreativeLifestyle ? 'Expresses your artistic nature while maintaining bohemian aesthetic.' : 'Adds texture and visual interest typical of bohemian style.',
-              styleMatch: isCreativeLifestyle ? 93 : 85,
+          );
+        } else if (stylePreference === 'romantic') {
           newRecommendations.nails.push(
             {
-              supplier: isCreativeLifestyle ? 'Local Artisan Markets' : 'Anthropologie'
+              id: 'n_rom1',
               name: 'Soft Pink Ombre',
               description: 'Delicate gradient from clear to soft pink.',
               imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
-          const { budget, lifestyle } = userProfile.styleData;
-          const isProfessional = lifestyle === 'professional' || lifestyle === 'professional-casual';
-          const isHighBudget = budget === 'over-2000';
-          
               reason: 'Enhances a romantic and gentle aesthetic.',
               matchScore: 87,
               length: 'medium',
-              name: isHighBudget ? 'Savile Row Tailored Navy Blazer' : 'Navy Blazer',
-              description: isHighBudget ? 'Bespoke tailoring with finest materials for the ultimate classic piece.' : 'Timeless piece that elevates any outfit.',
+              finish: 'glossy',
+              maintenance: 'medium',
               supplier: location ? `Nail salons in ${location.city}` : 'Local Nail Salon',
-              reason: isProfessional ? 'Essential for your professional wardrobe and classic style preference.' : 'Essential for classic style, versatile and always appropriate.',
-              styleMatch: isProfessional ? 98 : 91,
+              seasonalNote: currentSeason === 'spring' ? 'Perfect for spring romance' : undefined
+            }
           );
         } else if (lifestyle === 'professional-casual') {
-              supplier: isHighBudget ? 'Huntsman Savile Row' : 'Reiss'
+          newRecommendations.nails.push(
             {
               id: 'n_prof1',
               name: 'Neutral Gel Manicure',
-              name: isProfessional ? 'Executive Pencil Skirt' : 'Classic Pencil Skirt',
-              description: isProfessional ? 'Professional-grade tailoring designed for executive presence.' : 'Flattering silhouette perfect for professional settings.',
+              description: 'Professional and polished with long-lasting wear.',
+              imageUrl: 'https://images.pexels.com/photos/3997387/pexels-photo-3997387.jpeg?auto=compress&cs=tinysrgb&w=400',
               reason: 'Perfect for professional settings while maintaining style.',
-              reason: isProfessional ? 'Essential for your professional wardrobe with classic elegance.' : 'Classic piece that creates an elegant, polished look.',
-              styleMatch: isProfessional ? 95 : 88,
+              matchScore: 92,
+              length: 'short',
               finish: 'glossy',
               maintenance: 'low',
-              supplier: isProfessional ? 'Theory' : 'Whistles'
+              supplier: location ? `Professional nail salons in ${location.city}` : 'Professional Nail Salon'
             }
           );
         } else {
