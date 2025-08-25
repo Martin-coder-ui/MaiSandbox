@@ -324,15 +324,19 @@ export default function MaiSocialScreen() {
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden">
                     <img 
-                      src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150" 
-                      alt="Lisa Rodriguez" 
-                      className="w-full h-full object-cover"
+                      src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150"
+                      alt="Lisa Rodriguez"
+                      className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-200"
+                      onClick={() => handleUserClick('user1')}
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <button
+                      onClick={() => handleUserClick('user1')}
+                      className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                    >
                       {isProvider ? 'Emma Thompson' : 'Lisa Rodriguez'}
-                    </p>
+                    </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {isProvider ? 'Potential Client - MaiHealth' : 'Financial Advisor'}
                     </p>
@@ -346,15 +350,19 @@ export default function MaiSocialScreen() {
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden">
                     <img 
-                      src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150" 
-                      alt="David Parker" 
-                      className="w-full h-full object-cover"
+                      src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=150"
+                      alt="David Parker"
+                      className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-200"
+                      onClick={() => handleUserClick('user2')}
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <button
+                      onClick={() => handleUserClick('user2')}
+                      className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                    >
                       {isProvider ? 'James Wilson' : 'David Parker'}
-                    </p>
+                    </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {isProvider ? 'Potential Client - MaiMoney' : 'Smart Home Enthusiast'}
                     </p>
@@ -368,15 +376,19 @@ export default function MaiSocialScreen() {
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden">
                     <img 
-                      src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150" 
-                      alt="Maria Santos" 
-                      className="w-full h-full object-cover"
+                      src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150"
+                      alt="Maria Santos"
+                      className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-200"
+                      onClick={() => handleUserClick('user3')}
                     />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <button
+                      onClick={() => handleUserClick('user3')}
+                      className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                    >
                       {isProvider ? 'Sophie Chen' : 'Maria Santos'}
-                    </p>
+                    </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {isProvider ? 'Potential Client - MaiStyle' : 'Personal Stylist'}
                     </p>
