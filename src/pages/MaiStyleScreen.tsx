@@ -6,12 +6,16 @@ import { useAuth } from "../contexts/AuthContext";
 import { useMaiStyleRecommendations } from "../hooks/useMaiStyleRecommendations";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useSeasonalRecommendations } from "../hooks/useSeasonalRecommendations";
+import { useProfile } from "../hooks/useProfile";
 
 export default function MaiStyleScreen() {
   const { user } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const { location } = useGeolocation();
   const { getCurrentSeason } = useSeasonalRecommendations();
   const currentSeason = getCurrentSeason();
+  
+  const isProvider = profile?.user_type === 'provider';
   
   const { recommendations: styleRecommendations, loading } = useMaiStyleRecommendations(
     user?.profileData,
