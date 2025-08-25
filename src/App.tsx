@@ -21,6 +21,7 @@ import ProviderDashboardScreen from './pages/ProviderDashboardScreen';
 import ProviderRegistrationScreen from './pages/ProviderRegistrationScreen';
 import ProfileSettingsScreen from './pages/ProfileSettingsScreen';
 import useDarkMode from './hooks/useDarkMode';
+import ToastContainer from './components/ui/ToastContainer';
 
 const App: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -50,6 +51,7 @@ const App: React.FC = () => {
           </Routes>
         </MainContent>
         <Footer />
+        <ToastContainer />
       </div>
     </AuthProvider>
   );
