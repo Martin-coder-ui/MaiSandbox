@@ -300,6 +300,36 @@ export const socialApi = {
     
     return data;
   },
+
+  // Comment likes
+  async likeComment(commentId: string, userId: string) {
+    const { data, error } = await supabase
+      .from('social_likes')
+      .insert([
+        { comment_id: commentId, user_id: userId }
+      ]);
+    
+    if (error) {
+      console.error('Error liking comment:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+  
+  async unlikeComment(commentId: string, userId: string) {
+    const { data, error } = await supabase
+      .from('social_likes')
+      .delete()
+      .match({ comment_id: commentId, user_id: userId });
+    
+    if (error) {
+      console.error('Error unliking comment:', error);
+      throw error;
+    }
+    
+    return data;
+  },
   
   // Saves
   async savePost(postId: string, userId: string) {

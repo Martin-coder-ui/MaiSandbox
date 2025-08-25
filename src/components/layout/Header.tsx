@@ -7,6 +7,7 @@ import { useProfile } from '../../hooks/useProfile';
 import TestUserSwitcher from '../TestUserSwitcher';
 import LanguageSelector from '../LanguageSelector';
 import CurrencySelector from '../CurrencySelector';
+import NotificationCenter from '../NotificationCenter';
 
 type HeaderProps = {
   isDarkMode: boolean;
@@ -100,6 +101,9 @@ const Header: React.FC<HeaderProps> = ({ isDarkMode, toggleDarkMode }) => {
           
           {/* Test User Switcher - only show when authenticated */}
           {isAuthenticated && <TestUserSwitcher />}
+          
+          {/* Notification Center - only show when authenticated */}
+          {isAuthenticated && <NotificationCenter />}
           
           {/* Language and Currency Selectors */}
           <LanguageSelector />

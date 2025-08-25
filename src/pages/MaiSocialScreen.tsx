@@ -4,6 +4,8 @@ import { useProfile } from "../hooks/useProfile";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useMaiSocial } from "../hooks/useMaiSocial";
 import CreatePostModal from "../components/CreatePostModal";
+import CommentSection from "../components/CommentSection";
+import UserProfile from "../components/UserProfile";
 import { 
   MessageSquare, 
   Heart, 
@@ -40,6 +42,8 @@ export default function MaiSocialScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const handleCreatePost = async (postData: any) => {
@@ -56,6 +60,34 @@ export default function MaiSocialScreen() {
     setShowVideoModal(false);
     setCurrentVideo(null);
     setIsPlaying(false);
+  };
+
+  const toggleComments = (postId: string) => {
+    setExpandedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+  };
+
+  const handleLike = async (postId: string) => {
+    await likePost(postId);
+  };
+
+  const handleShare = async (postId: string) => {
+    await sharePost(postId);
+  };
+
+  const handleSave = async (postId: string) => {
+    await savePost(postId);
   };
 
   const togglePlayPause = () => {
@@ -460,25 +492,37 @@ export default function MaiSocialScreen() {
                 <div className="p-4 flex items-start justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden">
-                      <img 
-                        src={post.user.avatar} 
-                        alt={post.user.name} 
-                        className="w-full h-full object-cover"
-                      />
+                      <button
+                        onClick={() => handleUserClick(post.userId)}
+                        className="w-full h-full"
+                      >
+                        <img 
+                          src={post.userAvatar} 
+                          alt={post.userName} 
+                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-200"
+                        />
+                      </button>
                     </div>
                     <div>
                       <div className="flex items-center">
-                        <h4 className="font-medium text-gray-900 dark:text-white">{post.user.name}</h4>
-                        {post.user.isVerified && (
+                        <button
+                          onClick={() => handleUserClick(post.userId)}
+                          className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                        >
+                          {post.userName}
+                        </button>
+                        {post.userType === 'provider' && (
                           <svg className="w-4 h-4 ml-1 text-primary-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                         )}
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{post.timestamp}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(post.timestamp).toLocaleDateString()}
+                        </span>
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                          {post.user.badge}
+                          {post.userBadge || post.vertical}
                         </span>
                       </div>
                     </div>
@@ -578,25 +622,30 @@ export default function MaiSocialScreen() {
                     <Heart className={`w-5 h-5 ${post.liked ? 'fill-current' : ''}`} />
                     <span>Like</span>
                   </button>
-                  <button 
-                    onClick={() => handleComment(post.id)}
-                  onClick={() => addComment(post.id, 'Great post!')}
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    <span>Comment</span>
-                  </button>
+                  
+                  <CommentSection
+                    postId={post.id}
+                    isExpanded={expandedComments.has(post.id)}
+                    onToggle={() => toggleComments(post.id)}
+                    commentCount={post.stats.comments}
+                  />
+                  
                   <button 
                     onClick={() => handleShare(post.id)}
-                  onClick={() => sharePost(post.id)}
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
                   >
                     <Share2 className="w-5 h-5" />
                     <span>Share</span>
                   </button>
                   <button 
                     onClick={() => handleSave(post.id)}
-                  onClick={() => savePost(post.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                      post.saved
+                        ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
                   >
-                    <Bookmark className="w-5 h-5" />
+                    <Bookmark className={`w-5 h-5 ${post.saved ? 'fill-current' : ''}`} />
                     <span>Save</span>
                   </button>
                 </div>
@@ -612,6 +661,14 @@ export default function MaiSocialScreen() {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreatePost}
       />
+
+      {/* User Profile Modal */}
+      {selectedUserId && (
+        <UserProfile
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
 
       {/* Video Modal */}
       {showVideoModal && currentVideo && (

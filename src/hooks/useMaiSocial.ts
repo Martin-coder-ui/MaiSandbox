@@ -557,6 +557,44 @@ export const useMaiSocial = (user?: User | null) => {
     }
   };
 
+  // Like/unlike a comment
+  const likeComment = async (commentId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    try {
+      // For now, we'll just like the comment (unlike functionality can be added later)
+      await socialApi.likeComment(commentId, user.id);
+      return { success: true };
+    } catch (err) {
+      console.error('Error liking comment:', err);
+      return { success: false, error: 'Failed to like comment' };
+    }
+  };
+
+  // Follow/unfollow a user
+  const followUser = async (targetUserId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    try {
+      await socialApi.followUser(user.id, targetUserId);
+      return { success: true };
+    } catch (err) {
+      console.error('Error following user:', err);
+      return { success: false, error: 'Failed to follow user' };
+    }
+  };
+
+  const unfollowUser = async (targetUserId: string) => {
+    if (!user) return { success: false, error: 'User not authenticated' };
+    
+    try {
+      await socialApi.unfollowUser(user.id, targetUserId);
+      return { success: true };
+    } catch (err) {
+      console.error('Error unfollowing user:', err);
+      return { success: false, error: 'Failed to unfollow user' };
+    }
+  };
   // Share a post
   const sharePost = async (postId: string) => {
     if (!user) return { success: false, error: 'User not authenticated' };
@@ -725,6 +763,9 @@ export const useMaiSocial = (user?: User | null) => {
     likePost,
     savePost,
     addComment,
+    likeComment,
+    followUser,
+    unfollowUser,
     sharePost,
     fetchTrendingTopics,
     fetchSuggestedConnections
