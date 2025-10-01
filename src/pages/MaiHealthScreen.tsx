@@ -4,7 +4,6 @@ import SeasonalNotifications from "../components/SeasonalNotifications";
 import { Calendar, Activity, Heart, Users, Stethoscope, Shield, TrendingUp, Brain, Apple, ChevronRight, Sparkles } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useProfile } from "../hooks/useProfile";
-import { useProfile } from "../hooks/useProfile";
 import { useMaiHealthRecommendations } from "../hooks/useMaiHealthRecommendations";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useSeasonalRecommendations } from "../hooks/useSeasonalRecommendations";
