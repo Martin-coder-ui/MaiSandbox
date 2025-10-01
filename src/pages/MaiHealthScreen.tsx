@@ -11,7 +11,6 @@ import { useSeasonalRecommendations } from "../hooks/useSeasonalRecommendations"
 export default function MaiHealthScreen() {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { profile } = useProfile();
   const isProvider = profile?.type === 'provider';
   const { location } = useGeolocation();
   const { getCurrentSeason } = useSeasonalRecommendations();
