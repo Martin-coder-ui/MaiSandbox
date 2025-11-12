@@ -107,24 +107,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (profile) {
       return {
         id: profile.id,
-        email: profile.email,
-        name: profile.name || supabaseUser.email,
+        email: profile.email || supabaseUser.email,
+        name: profile.full_name || supabaseUser.email,
         avatar: profile.avatar_url || supabaseUser.user_metadata?.avatar_url,
-        role: profile.type || 'user',
+        role: 'user',
         profileData: {
-          age: profile.age,
-          gender: profile.gender,
-          location: profile.location,
-          socialEngagement: profile.social_engagement,
-          financeData: profile.finance_data,
-          healthData: profile.health_data,
-          styleData: profile.style_data,
-          cvData: profile.cv_data,
-          preferredSuppliers: profile.preferred_suppliers
-        },
-        serviceAreas: profile.service_areas,
-        specialization: profile.specialization,
-        providerData: profile.provider_data
+          location: profile.location
+        }
       };
     }
     return null;
@@ -214,21 +203,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (data.user) {
-      // Create a corresponding profile entry in your 'profiles' table
       const { error: profileError } = await supabase.from('profiles').insert([
         {
           id: data.user.id,
           email: data.user.email,
-          name: name,
-          type: 'client', // Default type for new sign-ups
-          social_engagement: 'moderate', // Default value
-          service_areas: ['MaiHealth', 'MaiMoney', 'MaiStyle', 'MaiHome'] // Default service areas
+          full_name: name
         },
       ]);
 
       if (profileError) {
         console.error('Error creating user profile:', profileError.message);
-        // Optionally, you might want to roll back the auth.signUp here
         return false;
       }
 
