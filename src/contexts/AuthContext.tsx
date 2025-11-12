@@ -89,34 +89,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   console.log('[AuthContext] Initializing AuthProvider');
 
   const fetchUserProfile = async (supabaseUser: any): Promise<UserProfile | null> => {
-    if (!supabaseUser) return null;
-
-    console.log('[AuthContext] Fetching profile for user:', supabaseUser.id);
-
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', supabaseUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error fetching user profile:', error);
+    if (!supabaseUser) {
+      console.log('[AuthContext] No supabase user provided');
       return null;
     }
 
-    if (profile) {
-      return {
-        id: profile.id,
-        email: profile.email || supabaseUser.email,
-        name: profile.full_name || supabaseUser.email,
-        avatar: profile.avatar_url || supabaseUser.user_metadata?.avatar_url,
-        role: 'user',
-        profileData: {
-          location: profile.location
-        }
-      };
+    console.log('[AuthContext] Fetching profile for user:', supabaseUser.id);
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', supabaseUser.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[AuthContext] Error fetching user profile:', error.message, error);
+        return null;
+      }
+
+      if (profile) {
+        console.log('[AuthContext] Profile found:', profile.id);
+        return {
+          id: profile.id,
+          email: profile.email || supabaseUser.email,
+          name: profile.full_name || supabaseUser.email,
+          avatar: profile.avatar_url || supabaseUser.user_metadata?.avatar_url,
+          role: 'user',
+          profileData: {
+            location: profile.location
+          }
+        };
+      }
+
+      console.log('[AuthContext] No profile found for user:', supabaseUser.id);
+      return null;
+    } catch (err) {
+      console.error('[AuthContext] Exception fetching profile:', err);
+      return null;
     }
-    return null;
   };
 
   useEffect(() => {
@@ -163,18 +174,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error('Login error:', error.message);
+    try {
+      console.log('[AuthContext] Starting login for:', email);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        console.error('[AuthContext] Login error:', error.message);
+        return false;
+      }
+
+      if (data.user) {
+        console.log('[AuthContext] User authenticated, fetching profile...');
+        const profile = await fetchUserProfile(data.user);
+
+        if (!profile) {
+          console.error('[AuthContext] Failed to fetch user profile');
+          return false;
+        }
+
+        console.log('[AuthContext] Profile fetched successfully:', profile.email);
+        setUser(profile);
+        setIsAuthenticated(true);
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      console.error('[AuthContext] Exception in login:', err);
       return false;
     }
-    if (data.user) {
-      const profile = await fetchUserProfile(data.user);
-      setUser(profile);
-      setIsAuthenticated(!!profile);
-      return true;
-    }
-    return false;
   };
 
   const logout = async () => {
