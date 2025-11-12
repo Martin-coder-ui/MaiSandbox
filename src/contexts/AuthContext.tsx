@@ -183,18 +183,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      if (data.user) {
-        console.log('[AuthContext] User authenticated, fetching profile...');
-        const profile = await fetchUserProfile(data.user);
-
-        if (!profile) {
-          console.error('[AuthContext] Failed to fetch user profile');
-          return false;
-        }
-
-        console.log('[AuthContext] Profile fetched successfully:', profile.email);
-        setUser(profile);
-        setIsAuthenticated(true);
+      if (data.user && data.session) {
+        console.log('[AuthContext] User authenticated, session established');
         return true;
       }
 
