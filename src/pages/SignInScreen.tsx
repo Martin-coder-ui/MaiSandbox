@@ -1,19 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Eye, EyeOff, LogIn, User, Users, Briefcase } from "lucide-react";
+import { Eye, EyeOff, LogIn, User, Users, Briefcase, ChevronDown } from "lucide-react";
 
 export default function SignInScreen() {
   const navigate = useNavigate();
-  const { login, getTestUsers } = useAuth();
+  const { login, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showTestAccounts, setShowTestAccounts] = useState(false);
-
-  const testUsers = getTestUsers();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,39 +20,14 @@ export default function SignInScreen() {
     
     try {
       const success = await login(email, password);
-      
+
       if (!success) {
         setError('Invalid email or password. Please try again.');
         setIsLoading(false);
         return;
       }
-      
-      // The user object from useAuth will now be populated after successful login
-      // Use the user object from AuthContext directly for navigation logic
-      if (authUser) { // 'authUser' here is the state from AuthContext
-        const userType = authUser.role; // Assuming 'role' is available on the user object from AuthContext
-        const serviceAreas = authUser.serviceAreas; // Assuming 'serviceAreas' is available
-        
-        if (userType === 'provider') {
-          navigate('/provider-dashboard');
-        } else {
-          // Navigate to the first service area for clients
-          const firstService = serviceAreas?.[0];
-          if (firstService === 'MaiHealth') {
-            navigate('/maihealth');
-          } else if (firstService === 'MaiHome') {
-            navigate('/maihome');
-          } else if (firstService === 'MaiStyle') {
-            navigate('/maistyle');
-          } else if (firstService === 'MaiMoney') {
-            navigate('/maimoney');
-          } else {
-            navigate('/maihome'); // Default
-          }
-        }
-      } else {
-        setError('User not found. Please try again.');
-      }
+
+      navigate('/maihome');
     } catch (err) {
       setError('An error occurred during sign in. Please try again.');
     } finally {
