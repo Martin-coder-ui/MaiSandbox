@@ -6,28 +6,34 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+      if (!user) {
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        setProfile(null);
+      } else {
+        setProfile(data);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error("Exception in fetchProfile:", err);
       setProfile(null);
       setLoading(false);
-      return;
     }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (error) {
-      console.error("Error fetching profile:", error);
-      setProfile(null);
-    } else {
-      setProfile(data);
-    }
-    setLoading(false);
   };
 
   useEffect(() => {

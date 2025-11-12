@@ -45,7 +45,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userId, onClose }) => {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
       setProfile(profileData);
@@ -89,7 +89,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ userId, onClose }) => {
           .select('id')
           .eq('follower_id', currentUser.id)
           .eq('following_id', userId)
-          .single();
+          .maybeSingle();
 
         setIsFollowing(!!followData);
       }
