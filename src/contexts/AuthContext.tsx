@@ -187,22 +187,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, name: string): Promise<boolean> => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name,
+    try {
+      console.log('[AuthContext] Starting signup for:', email);
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      console.error('Sign up error:', error.message);
-      return false;
-    }
+      if (error) {
+        console.error('[AuthContext] Sign up error:', error.message, error);
+        return false;
+      }
 
-    if (data.user) {
+      console.log('[AuthContext] Signup response:', {
+        hasUser: !!data.user,
+        hasSession: !!data.session,
+        userId: data.user?.id
+      });
+
+      if (!data.user) {
+        console.error('[AuthContext] No user returned from signup');
+        return false;
+      }
+
+      console.log('[AuthContext] Creating profile for user:', data.user.id);
+
       const { error: profileError } = await supabase.from('profiles').insert([
         {
           id: data.user.id,
@@ -212,16 +227,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ]);
 
       if (profileError) {
-        console.error('Error creating user profile:', profileError.message);
+        console.error('[AuthContext] Error creating user profile:', profileError.message, profileError);
         return false;
       }
+
+      console.log('[AuthContext] Profile created successfully');
 
       const profile = await fetchUserProfile(data.user);
       setUser(profile);
       setIsAuthenticated(!!profile);
       return true;
+    } catch (err) {
+      console.error('[AuthContext] Exception during signup:', err);
+      return false;
     }
-    return false;
   };
 
   return (
