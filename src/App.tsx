@@ -30,7 +30,7 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
+      <div className="min-h-screen flex flex-col">
         <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
         <MainContent>
           <Routes>
