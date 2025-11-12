@@ -97,11 +97,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('[AuthContext] Fetching profile for user:', supabaseUser.id);
 
     try {
-      const { data: profile, error } = await supabase
+      // Add timeout to detect hanging queries
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout after 5 seconds')), 5000)
+      );
+
+      const fetchPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .maybeSingle();
+
+      console.log('[AuthContext] Executing profile query...');
+      const { data: profile, error } = await Promise.race([fetchPromise, timeoutPromise]);
+      console.log('[AuthContext] Profile query completed', { hasProfile: !!profile, hasError: !!error });
 
       if (error) {
         console.error('[AuthContext] Error fetching user profile:', error.message, error);
@@ -189,7 +198,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AuthContext] Starting login for:', email);
       console.log('[AuthContext] Supabase client available:', !!supabase);
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Login timeout after 10 seconds')), 10000)
+      );
+
+      const loginPromise = supabase.auth.signInWithPassword({ email, password });
+
+      console.log('[AuthContext] Executing login request...');
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
       console.log('[AuthContext] Supabase response received', { hasData: !!data, hasError: !!error });
 
       if (error) {
