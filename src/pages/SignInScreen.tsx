@@ -48,8 +48,15 @@ export default function SignInScreen() {
         return;
       }
 
-      console.log('[SignInScreen] User state set, navigating...');
-      navigate('/maihome');
+      console.log('[SignInScreen] User state set, navigating...', { userRole: user.role });
+
+      // Navigate based on user role
+      if (user.role === 'provider') {
+        navigate('/provider-dashboard');
+      } else {
+        navigate('/maihome');
+      }
+
       setIsLoading(false);
     } catch (err) {
       console.error('[SignInScreen] Exception:', err);

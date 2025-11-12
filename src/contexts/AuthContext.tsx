@@ -119,17 +119,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         console.log('[AuthContext] Profile found:', profile.email);
+
+        // Check if user is a provider
+        const { data: providerProfile } = await supabase
+          .from('provider_profiles')
+          .select('*, provider_types(name)')
+          .eq('id', supabaseUser.id)
+          .maybeSingle();
+
+        const isProvider = !!providerProfile;
+        console.log('[AuthContext] Provider check:', { isProvider, hasProviderProfile: !!providerProfile });
+
         const userProfile = {
           id: profile.id,
           email: profile.email || supabaseUser.email,
           name: profile.full_name || supabaseUser.email,
           avatar: profile.avatar_url || supabaseUser.user_metadata?.avatar_url,
-          role: 'user' as const,
+          role: isProvider ? ('provider' as const) : ('user' as const),
           profileData: {
             location: profile.location
           }
         };
-        console.log('[AuthContext] Returning profile object');
+        console.log('[AuthContext] Returning profile object with role:', userProfile.role);
         return userProfile;
       }
 
