@@ -160,11 +160,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[AuthContext] Auth state changed:', event);
 
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'SIGNED_IN' && session && !user) {
+        console.log('[AuthContext] Auth listener fetching profile');
         const profile = await fetchUserProfile(session.user);
         setUser(profile);
         setIsAuthenticated(!!profile);
       } else if (event === 'SIGNED_OUT') {
+        console.log('[AuthContext] User signed out');
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -184,7 +186,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user && data.session) {
-        console.log('[AuthContext] User authenticated, session established');
+        console.log('[AuthContext] User authenticated, fetching profile...');
+
+        // Fetch profile immediately and wait for it
+        const profile = await fetchUserProfile(data.user);
+
+        if (!profile) {
+          console.error('[AuthContext] Failed to fetch profile');
+          return false;
+        }
+
+        console.log('[AuthContext] Profile loaded:', profile.email);
+        setUser(profile);
+        setIsAuthenticated(true);
+
+        // Small delay to ensure state updates propagate
+        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('[AuthContext] Login complete');
+
         return true;
       }
 
