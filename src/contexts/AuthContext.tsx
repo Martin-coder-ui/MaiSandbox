@@ -86,14 +86,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  console.log('[AuthContext] Initializing AuthProvider');
+
   const fetchUserProfile = async (supabaseUser: any): Promise<UserProfile | null> => {
     if (!supabaseUser) return null;
+
+    console.log('[AuthContext] Fetching profile for user:', supabaseUser.id);
 
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', supabaseUser.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching user profile:', error);
@@ -127,18 +131,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    console.log('[AuthContext] Running auth initialization useEffect');
+
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const profile = await fetchUserProfile(session.user);
-        setUser(profile);
-        setIsAuthenticated(!!profile);
+      try {
+        console.log('[AuthContext] Getting current session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error('[AuthContext] Error getting session:', error);
+          return;
+        }
+
+        console.log('[AuthContext] Session:', session ? 'exists' : 'none');
+
+        if (session) {
+          const profile = await fetchUserProfile(session.user);
+          setUser(profile);
+          setIsAuthenticated(!!profile);
+        }
+      } catch (err) {
+        console.error('[AuthContext] Exception in getSession:', err);
       }
     };
 
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AuthContext] Auth state changed:', event);
+
       if (event === 'SIGNED_IN' && session) {
         const profile = await fetchUserProfile(session.user);
         setUser(profile);

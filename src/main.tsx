@@ -5,6 +5,9 @@ import './index.css';
 import './i18n';
 import { BrowserRouter } from 'react-router-dom';
 
+console.log('[Main] Starting application...');
+console.log('[Main] Root element:', document.getElementById('root'));
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
@@ -12,3 +15,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+
+console.log('[Main] React render initiated');

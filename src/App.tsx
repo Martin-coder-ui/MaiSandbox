@@ -26,6 +26,8 @@ import ToastContainer from './components/ui/ToastContainer';
 const App: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
 
+  console.log('[App] Rendering App component');
+
   return (
     <AuthProvider>
       <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''}`}>
@@ -48,6 +50,7 @@ const App: React.FC = () => {
             <Route path="/provider-dashboard" element={<ProviderDashboardScreen />} />
             <Route path="/provider-register" element={<ProviderRegistrationScreen />} />
             <Route path="/profile-settings" element={<ProfileSettingsScreen />} />
+            <Route path="*" element={<WelcomeScreen />} />
           </Routes>
         </MainContent>
         <Footer />
