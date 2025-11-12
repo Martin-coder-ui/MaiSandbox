@@ -184,20 +184,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    console.log('[AuthContext] Login function called with:', email);
     try {
       console.log('[AuthContext] Starting login for:', email);
+      console.log('[AuthContext] Supabase client available:', !!supabase);
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log('[AuthContext] Supabase response received', { hasData: !!data, hasError: !!error });
 
       if (error) {
-        console.error('[AuthContext] Login error:', error.message);
+        console.error('[AuthContext] Login error:', error.message, error);
         return false;
       }
 
       if (data.user && data.session) {
-        console.log('[AuthContext] Authentication successful');
+        console.log('[AuthContext] Authentication successful for:', data.user.email);
         return true;
       }
 
+      console.log('[AuthContext] No user or session in response');
       return false;
     } catch (err) {
       console.error('[AuthContext] Exception in login:', err);

@@ -19,8 +19,10 @@ export default function SignInScreen() {
     setError('');
 
     try {
-      console.log('[SignInScreen] Attempting login...');
+      console.log('[SignInScreen] Attempting login...', { email, hasPassword: !!password });
+      console.log('[SignInScreen] Login function available:', typeof login);
       const success = await login(email, password);
+      console.log('[SignInScreen] Login returned:', success);
 
       if (!success) {
         console.log('[SignInScreen] Login failed');
