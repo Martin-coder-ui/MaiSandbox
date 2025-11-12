@@ -109,17 +109,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profile) {
-        console.log('[AuthContext] Profile found:', profile.id);
-        return {
+        console.log('[AuthContext] Profile found:', profile.email);
+        const userProfile = {
           id: profile.id,
           email: profile.email || supabaseUser.email,
           name: profile.full_name || supabaseUser.email,
           avatar: profile.avatar_url || supabaseUser.user_metadata?.avatar_url,
-          role: 'user',
+          role: 'user' as const,
           profileData: {
             location: profile.location
           }
         };
+        console.log('[AuthContext] Returning profile object');
+        return userProfile;
       }
 
       console.log('[AuthContext] No profile found for user:', supabaseUser.id);
@@ -158,13 +160,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[AuthContext] Auth state changed:', event);
+      console.log('[AuthContext] Auth state changed:', event, session ? 'has session' : 'no session');
 
-      if (event === 'SIGNED_IN' && session && !user) {
-        console.log('[AuthContext] Auth listener fetching profile');
+      if (event === 'SIGNED_IN' && session) {
+        console.log('[AuthContext] Auth listener fetching profile for:', session.user.email);
         const profile = await fetchUserProfile(session.user);
-        setUser(profile);
-        setIsAuthenticated(!!profile);
+
+        if (profile) {
+          console.log('[AuthContext] Profile fetched, updating state');
+          setUser(profile);
+          setIsAuthenticated(true);
+        } else {
+          console.error('[AuthContext] Failed to fetch profile');
+        }
       } else if (event === 'SIGNED_OUT') {
         console.log('[AuthContext] User signed out');
         setUser(null);
