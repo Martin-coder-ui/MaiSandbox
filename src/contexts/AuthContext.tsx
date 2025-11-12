@@ -186,24 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user && data.session) {
-        console.log('[AuthContext] User authenticated, fetching profile...');
-
-        // Fetch profile immediately and wait for it
-        const profile = await fetchUserProfile(data.user);
-
-        if (!profile) {
-          console.error('[AuthContext] Failed to fetch profile');
-          return false;
-        }
-
-        console.log('[AuthContext] Profile loaded:', profile.email);
-        setUser(profile);
-        setIsAuthenticated(true);
-
-        // Small delay to ensure state updates propagate
-        await new Promise(resolve => setTimeout(resolve, 100));
-        console.log('[AuthContext] Login complete');
-
+        console.log('[AuthContext] Authentication successful');
         return true;
       }
 

@@ -17,20 +17,41 @@ export default function SignInScreen() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
+      console.log('[SignInScreen] Attempting login...');
       const success = await login(email, password);
 
       if (!success) {
+        console.log('[SignInScreen] Login failed');
         setError('Invalid email or password. Please try again.');
         setIsLoading(false);
         return;
       }
 
+      console.log('[SignInScreen] Login successful, waiting for user state...');
+
+      // Wait for user state to be set by the auth listener
+      // Poll for up to 3 seconds
+      let attempts = 0;
+      while (!user && attempts < 30) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!user) {
+        console.error('[SignInScreen] User state not set after login');
+        setError('Authentication successful but profile loading failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('[SignInScreen] User state set, navigating...');
       navigate('/maihome');
+      setIsLoading(false);
     } catch (err) {
+      console.error('[SignInScreen] Exception:', err);
       setError('An error occurred during sign in. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
