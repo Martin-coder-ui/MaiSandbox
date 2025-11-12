@@ -226,7 +226,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user && data.session) {
         console.log('[AuthContext] Authentication successful for:', data.user.email);
-        return true;
+
+        // Fetch profile immediately to avoid race condition
+        console.log('[AuthContext] Fetching profile in login function...');
+        const profile = await fetchUserProfile(data.user);
+
+        if (profile) {
+          console.log('[AuthContext] Profile fetched in login, setting user state');
+          setUser(profile);
+          setIsAuthenticated(true);
+          return true;
+        } else {
+          console.error('[AuthContext] Failed to fetch profile in login');
+          return false;
+        }
       }
 
       console.log('[AuthContext] No user or session in response');

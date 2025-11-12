@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 import { Eye, EyeOff, LogIn, User, Users, Briefcase, ChevronDown } from "lucide-react";
 
 export default function SignInScreen() {
@@ -31,27 +32,44 @@ export default function SignInScreen() {
         return;
       }
 
-      console.log('[SignInScreen] Login successful, waiting for user state...');
+      console.log('[SignInScreen] Login successful, fetching current user state...');
 
-      // Wait for user state to be set by the auth listener
-      // Poll for up to 3 seconds
-      let attempts = 0;
-      while (!user && attempts < 30) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
+      // Get fresh user state after login
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      if (!user) {
-        console.error('[SignInScreen] User state not set after login');
+      if (!currentUser) {
+        console.error('[SignInScreen] Could not get user after login');
         setError('Authentication successful but profile loading failed. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      console.log('[SignInScreen] User state set, navigating...', { userRole: user.role });
+      // Fetch the profile to get the role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (!profile) {
+        console.error('[SignInScreen] Profile not found');
+        setError('Profile not found. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if user is a provider
+      const { data: providerProfile } = await supabase
+        .from('provider_profiles')
+        .select('id')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      const isProvider = !!providerProfile;
+      console.log('[SignInScreen] Navigating...', { isProvider });
 
       // Navigate based on user role
-      if (user.role === 'provider') {
+      if (isProvider) {
         navigate('/provider-dashboard');
       } else {
         navigate('/maihome');
