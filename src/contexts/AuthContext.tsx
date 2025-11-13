@@ -204,7 +204,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AuthContext] Supabase client available:', !!supabase);
 
       console.log('[AuthContext] Executing login request...');
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Login timeout - check network/Supabase connection')), 30000)
+      );
+
+      const loginPromise = supabase.auth.signInWithPassword({ email, password });
+
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
       console.log('[AuthContext] Supabase response received', { hasData: !!data, hasError: !!error });
 
       if (error) {
