@@ -615,7 +615,7 @@ export const useSeasonalRecommendations = () => {
 
       // High-risk health conditions
       highRiskConditions.forEach(condition => {
-        if (user.serviceAreas.includes('MaiHealth')) {
+        if (user.serviceAreas && user.serviceAreas.includes('MaiHealth')) {
           const products = generateHealthProducts(condition.condition, user.profileData);
           
           notifications.push({
@@ -636,7 +636,7 @@ export const useSeasonalRecommendations = () => {
 
       // Increasing health conditions
       increasingConditions.forEach(condition => {
-        if (user.serviceAreas.includes('MaiHealth') && condition.status !== 'high') {
+        if (user.serviceAreas && user.serviceAreas.includes('MaiHealth') && condition.status !== 'high') {
           const products = generateHealthProducts(condition.condition, user.profileData);
           
           notifications.push({
@@ -674,7 +674,7 @@ export const useSeasonalRecommendations = () => {
       }
 
       // Simplified preventive care notifications
-      if (user.serviceAreas.includes('MaiHealth') && user.profileData?.age) {
+      if (user.serviceAreas && user.serviceAreas.includes('MaiHealth') && user.profileData?.age) {
         const preventiveCareNotifications = generatePreventiveCareNotifications(user.profileData);
         notifications.push(...preventiveCareNotifications);
       }
@@ -686,7 +686,7 @@ export const useSeasonalRecommendations = () => {
       const healthAlerts = getHealthAlerts();
 
       // Clothing change alert
-      if (clothingAlert && user.serviceAreas.includes('MaiStyle')) {
+      if (clothingAlert && user.serviceAreas && user.serviceAreas.includes('MaiStyle')) {
         const products = generateWeatherProducts(clothingAlert, user.profileData);
         
         notifications.push({
@@ -704,7 +704,7 @@ export const useSeasonalRecommendations = () => {
       }
 
       // Weather health alerts
-      if (healthAlerts.length > 0 && user.serviceAreas.includes('MaiHealth')) {
+      if (healthAlerts.length > 0 && user.serviceAreas && user.serviceAreas.includes('MaiHealth')) {
         notifications.push({
           id: `weather-health-${Date.now()}`,
           type: 'weather',

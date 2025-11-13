@@ -97,19 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('[AuthContext] Fetching profile for user:', supabaseUser.id);
 
     try {
-      // Add timeout to detect hanging queries
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Profile fetch timeout after 5 seconds')), 5000)
-      );
-
-      const fetchPromise = supabase
+      console.log('[AuthContext] Executing profile query...');
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .maybeSingle();
 
-      console.log('[AuthContext] Executing profile query...');
-      const { data: profile, error } = await Promise.race([fetchPromise, timeoutPromise]);
       console.log('[AuthContext] Profile query completed', { hasProfile: !!profile, hasError: !!error });
 
       if (error) {
