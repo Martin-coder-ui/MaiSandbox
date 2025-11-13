@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize the Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ohbpbwrwmhrolwyacfqs.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oYnBid3J3bWhyb2x3eWFjZnFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI5NDQzODIsImV4cCI6MjA3ODUyMDM4Mn0.oSigX3MAdoBmFuo4SNhNNXSJqRiVfiqLcJYeHkCt5jU';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://jzkmjkgccrbkbrfgepio.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6a21qa2djY3Jia2JyZmdlcGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMzE3NjAsImV4cCI6MjA2NzgwNzc2MH0.a3849kKrAEoSeBck8ZniB8xZtDqsEvVn-bnhTyMfx1U';
 
 console.log('[Supabase] Initializing with:', {
   url: supabaseUrl,
