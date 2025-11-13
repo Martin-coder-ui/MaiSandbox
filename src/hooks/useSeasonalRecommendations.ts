@@ -399,9 +399,14 @@ export const useSeasonalRecommendations = () => {
 
     // Get this year's health priorities
     const yearlyPriorities = getYearlyHealthPriorities(userAge, userGender);
-    
+
     // Focus on top 3 priorities for the year
-    const thisYearChecks = yearlyPriorities.slice(0, 3);
+    const thisYearChecks = (yearlyPriorities || []).slice(0, 3);
+
+    // Skip if no health checks available
+    if (thisYearChecks.length === 0) {
+      return notifications;
+    }
     
     // Generate excellent health monitoring products
     const products: Product[] = [];

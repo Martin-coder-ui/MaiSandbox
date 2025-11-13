@@ -44,29 +44,24 @@ const NotificationCenter: React.FC = () => {
 
     setLoading(true);
     try {
+      // Simplified query without complex joins for now
       const { data, error } = await supabase
         .from('social_notifications')
-        .select(`
-          *,
-          actor:profiles!social_notifications_actor_id_fkey(id, name, avatar_url, type),
-          post:social_posts(*),
-          comment:social_comments(*),
-          achievement:social_achievements(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
 
-      const formattedNotifications: Notification[] = data.map((notif: any) => ({
+      const formattedNotifications: Notification[] = (data || []).map((notif: any) => ({
         id: notif.id,
         type: notif.type,
-        actor: notif.actor,
-        post: notif.post,
-        comment: notif.comment,
-        achievement: notif.achievement,
-        message: notif.message,
+        actor: null, // Will fetch separately if needed
+        post: null,
+        comment: null,
+        achievement: null,
+        message: notif.message || `You have a new ${notif.type} notification`,
         read: notif.read,
         created_at: notif.created_at
       }));
