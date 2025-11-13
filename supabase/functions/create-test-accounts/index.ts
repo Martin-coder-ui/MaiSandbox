@@ -147,28 +147,34 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    await supabaseAdmin
-      .from('social_posts')
-      .insert([
-        {
-          user_id: results.find(r => r.email === 'emma.health@test.com')?.userId,
-          content: 'Just completed my first 5K run! Feeling amazing! 🏃‍♀️',
-          vertical: 'MaiHealth',
-          privacy_level: 'public'
-        },
-        {
-          user_id: results.find(r => r.email === 'james.finance@test.com')?.userId,
-          content: 'Installed new smart lighting throughout the house. Energy savings here I come! 💡',
-          vertical: 'MaiHome',
-          privacy_level: 'public'
-        },
-        {
-          user_id: results.find(r => r.email === 'sophie.style@test.com')?.userId,
-          content: 'Found the perfect minimalist wardrobe pieces at the thrift store today! ✨',
-          vertical: 'MaiStyle',
-          privacy_level: 'public'
-        }
-      ]);
+    const emmaUser = results.find(r => r.email === 'emma.health@test.com');
+    const jamesUser = results.find(r => r.email === 'james.finance@test.com');
+    const sophieUser = results.find(r => r.email === 'sophie.style@test.com');
+
+    if (emmaUser?.userId || jamesUser?.userId || sophieUser?.userId) {
+      await supabaseAdmin
+        .from('social_posts')
+        .insert([
+          emmaUser?.userId ? {
+            user_id: emmaUser.userId,
+            content: 'Just completed my first 5K run! Feeling amazing! 🏃‍♀️',
+            vertical: 'MaiHealth',
+            privacy_level: 'public'
+          } : null,
+          jamesUser?.userId ? {
+            user_id: jamesUser.userId,
+            content: 'Installed new smart lighting throughout the house. Energy savings here I come! 💡',
+            vertical: 'MaiHome',
+            privacy_level: 'public'
+          } : null,
+          sophieUser?.userId ? {
+            user_id: sophieUser.userId,
+            content: 'Found the perfect minimalist wardrobe pieces at the thrift store today! ✨',
+            vertical: 'MaiStyle',
+            privacy_level: 'public'
+          } : null
+        ].filter(Boolean));
+    }
 
     return new Response(
       JSON.stringify({
