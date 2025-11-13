@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Calendar, MapPin, Heart, Users, Target, Activity, Palette, FileText, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
+import { User, Calendar, MapPin, Heart, Users, Target, Activity, Palette, FileText, ChevronRight, ChevronLeft, CheckCircle, Shield } from 'lucide-react';
 import CVUploadForm from './CVUploadForm';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 const PersonalDetailsForm: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [formData, setFormData] = useState({
     // Basic Information
     age: '',
@@ -78,25 +83,75 @@ const PersonalDetailsForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // Save form data and navigate to profile setup options
-    const profileData = {
-      ...formData,
-      cvData: formData.cvFile ? {
-        fileName: formData.cvFile.name,
-        fileSize: formData.cvFile.size,
-        fileType: formData.cvFile.type,
-        uploadDate: new Date().toISOString(),
-        // In a real implementation, the file would be uploaded to a server
-        // and we'd store the file URL or ID here
-        status: 'uploaded'
-      } : null
-    };
-    
-    // Remove the actual file object before storing (can't serialize File objects)
-    const { cvFile, ...dataToStore } = profileData;
-    localStorage.setItem('mai_user_profile', JSON.stringify(dataToStore));
-    navigate('/profile-setup-options');
+  const handleSubmit = async () => {
+    if (!user) {
+      setSaveError('You must be logged in to save your profile.');
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError('');
+
+    try {
+      // Prepare profile data
+      const profileData = {
+        age: formData.age ? parseInt(formData.age) : null,
+        gender: formData.gender || null,
+        sexual_orientation: formData.sexualOrientation || null,
+        pronouns: formData.pronouns || null,
+        location: formData.location || null,
+        relationship_status: formData.relationshipStatus || null,
+        social_engagement: formData.socialEngagement || null,
+        fitness_level: formData.fitnessLevel || null,
+        dietary_preferences: formData.dietaryPreferences || null,
+        primary_goals: formData.primaryGoals,
+        interests: formData.interests,
+        health_conditions: formData.healthConditions,
+        medications: formData.medications,
+        allergies: formData.allergies,
+        style_preference: formData.stylePreference || null,
+        budget_range: formData.budgetRange || null,
+        income_range: formData.incomeRange || null,
+        financial_goals: formData.financialGoals,
+        cv_data: formData.cvFile ? {
+          fileName: formData.cvFile.name,
+          fileSize: formData.cvFile.size,
+          fileType: formData.cvFile.type,
+          uploadDate: new Date().toISOString(),
+          status: 'uploaded'
+        } : null
+      };
+
+      // Update the profiles table
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          preferences: profileData,
+          location: formData.location || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        setSaveError('Failed to save profile. Please try again.');
+        setIsSaving(false);
+        return;
+      }
+
+      console.log('Profile saved successfully');
+
+      // Also save to localStorage as backup
+      const { cvFile, ...dataToStore } = { ...formData, ...profileData };
+      localStorage.setItem('mai_user_profile', JSON.stringify(dataToStore));
+
+      setIsSaving(false);
+      navigate('/maihome');
+    } catch (err) {
+      console.error('Exception saving profile:', err);
+      setSaveError('An error occurred while saving your profile.');
+      setIsSaving(false);
+    }
   };
 
   const renderStepIndicator = () => (
@@ -783,6 +838,12 @@ const PersonalDetailsForm: React.FC = () => {
         {renderStepIndicator()}
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700 transition-all duration-300">
+          {saveError && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-600 dark:text-red-400 text-sm">{saveError}</p>
+            </div>
+          )}
+
           {renderCurrentStep()}
 
           <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
@@ -815,9 +876,14 @@ const PersonalDetailsForm: React.FC = () => {
             ) : (
               <button
                 onClick={handleSubmit}
-                className="px-6 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-all duration-200 shadow-sm hover:shadow flex items-center"
+                disabled={isSaving}
+                className={`px-6 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow flex items-center ${
+                  isSaving
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-secondary-600 text-white hover:bg-secondary-700'
+                }`}
               >
-                Complete Profile
+                {isSaving ? 'Saving...' : 'Complete Profile'}
                 <CheckCircle className="w-4 h-4 ml-2" />
               </button>
             )}
