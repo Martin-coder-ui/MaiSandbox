@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@elevenlabs/react": "^0.1.0",
-    "@supabase/supabase-js": "^2.51.0",
+    "@supabase/supabase-js": "^2.81.1",
     "i18next": "^23.7.6",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.4.2",
